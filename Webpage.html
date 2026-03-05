@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Time Manager (Stats Fixed + Tasks)</title>
+<title>Pro Time Manager (Stats Fixed + Tasks Board)</title>
 <style>
     :root {
         --primary: #2563eb;
@@ -16,7 +16,7 @@
         --bud-apical: #fa5252;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: var(--card); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; position: relative; }
+    .container { max-width: 1000px; margin: 0 auto; background: var(--card); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; position: relative; }
 
     /* Tabs */
     .tabs { display: flex; border-bottom: 1px solid var(--border); background: #fff; overflow-x: auto; }
@@ -76,18 +76,7 @@
         border-radius: 4px; white-space: nowrap; pointer-events: none; z-index: 10;
     }
 
-    .vascular-bundle {
-        width: 60px;
-        background: #f1f3f5;
-        border-left: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px 5px;
-        gap: 15px;
-        margin-left: 10px;
-        border-radius: 8px;
-    }
+    .vascular-bundle { width: 60px; background: #f1f3f5; border-left: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 10px 5px; gap: 15px; margin-left: 10px; border-radius: 8px; }
     .vascular-input { width: 100%; font-size: 0.7rem; padding: 5px; text-align: center; margin: 0;}
     .vascular-btn { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-radius: 50%; }
 
@@ -102,13 +91,11 @@
     .hint { font-size: 0.85rem; color: #666; margin-top: 8px; }
     .hint-strong { font-size: 0.85rem; color: #444; margin-top: 8px; font-weight: 600; }
     
-    /* Stats Specific */
+    /* Stats */
     .stat-bar { height: 20px; display: flex; border-radius: 10px; overflow: hidden; margin: 20px 0; background: #eee; }
     .stat-seg { height: 100%; }
     #statLegend li { margin-bottom: 5px; font-size: 0.9rem; }
     #page-stats canvas { display: block; margin: 0 auto; }
-    
-    /* Stats Selector Styling */
     .stats-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f1f3f5; padding: 10px; border-radius: 8px; }
     .stats-controls select { margin: 0; width: auto; font-weight: bold; border-color: #ced4da; }
 
@@ -117,14 +104,124 @@
     .time-input-group { display: flex; align-items: center; gap: 5px; }
     .time-input-group input { width: 60px; text-align: center; }
 
-    /* Tasks Specific */
-    .task-checkbox { width: 20px; height: 20px; cursor: pointer; margin-right: 15px; margin-bottom: 0; accent-color: var(--primary); }
-    .task-info-block { flex: 1; display: flex; flex-direction: column; justify-content: center; cursor: pointer; padding: 5px 0;}
-    .task-title-text { font-weight: bold; font-size: 1.05rem; }
-    .task-meta-text { font-size: 0.8rem; color: #888; margin-top: 4px; }
-    .task-completed .task-title-text { text-decoration: line-through; color: #adb5bd; }
+    /* ==========================================================
+       TASKS BOARD SPECIFIC STYLES (NEW)
+       ========================================================== */
+    .task-board-wrapper {
+        display: flex;
+        overflow-x: auto;
+        gap: 20px;
+        padding-bottom: 15px;
+        align-items: flex-start;
+        min-height: 350px;
+    }
     
-    /* Calendar Side Panel & Notes */
+    .kanban-col {
+        min-width: 300px;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Container Boxes */
+    .container-box {
+        border-radius: 10px;
+        background: #fdfdfd;
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.2s;
+    }
+    .container-header {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        gap: 8px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .container-color-picker {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    .container-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .container-color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+    
+    .container-title {
+        flex: 1;
+        font-weight: 600;
+        font-size: 1.05rem;
+        outline: none;
+        border-radius: 4px;
+        padding: 2px 4px;
+        transition: 0.2s;
+    }
+    .container-title:focus { background: rgba(255,255,255,0.7); box-shadow: 0 0 0 2px var(--primary); }
+    
+    .container-actions button { background: none; border: none; color: #888; padding: 4px; cursor: pointer; font-size: 1rem; }
+    .container-actions button:hover { color: var(--bud-apical); }
+
+    /* Dropzones & Task Cards */
+    .task-dropzone {
+        min-height: 60px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+    .task-dropzone.drag-over { background: rgba(0,0,0,0.03); }
+
+    .task-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        cursor: grab;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .task-card:active { cursor: grabbing; }
+    .task-card.dragging { opacity: 0.5; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transform: scale(1.02); }
+    
+    .task-card .task-checkbox { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary); }
+    .task-card .task-info-block { flex: 1; min-width: 0; }
+    .task-card .task-title-text { font-weight: 500; font-size: 0.95rem; word-break: break-word; }
+    .task-card .task-meta-text { font-size: 0.75rem; color: #888; margin-top: 4px; }
+    
+    /* Bottom Unassigned Area */
+    .unassigned-area {
+        background: #f8f9fa;
+        border: 2px dashed #ced4da;
+        border-radius: 10px;
+        margin-top: 20px;
+        padding: 15px;
+    }
+
+    .add-layer-btn {
+        min-width: 200px;
+        border: 2px dashed var(--border);
+        background: transparent;
+        color: var(--sub-text);
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .add-layer-btn:hover { background: rgba(0,0,0,0.02); color: var(--text); border-color: #adb5bd; }
+
+    /* Layouts / Notes */
     .calendar-container { flex-wrap: wrap; gap: 10px; }
     .cal-side-panel { flex: 1; min-width: 250px; background: #fafafa; border: 1px solid var(--border); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; max-height: 600px; }
     .note-dot { width: 6px; height: 6px; background-color: var(--bud-axillary); border-radius: 50%; position: absolute; top: 4px; right: 4px; }
@@ -162,12 +259,26 @@
         <ul class="log-list" id="recentListTimer"></ul>
     </div>
 
+    <!-- TASKS TAB REWRITTEN -->
     <div id="page-tasks" class="page">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 data-i18n="header_tasks" style="margin:0;">Task List</h3>
-            <button class="btn-primary" onclick="openTaskModal()" data-i18n="btn_add_task">+ Add Task</button>
+            <h3 data-i18n="header_tasks" style="margin:0;">Task Board</h3>
+            <button class="btn-primary" onclick="openTaskModal()">+ Add Task</button>
         </div>
-        <div id="activeTasksList" class="log-list"></div>
+        
+        <!-- Multi-Layer Kanban Board -->
+        <div class="task-board-wrapper" id="taskBoardContainer">
+            <!-- Columns injected by JS -->
+        </div>
+
+        <!-- Unassigned Area -->
+        <div class="unassigned-area">
+            <h4 style="margin: 0 0 10px 0; color: #555;">Unassigned / Inbox</h4>
+            <div id="unassignedZone" class="task-dropzone" data-container-id="null" style="min-height: 60px;">
+                <!-- Unassigned tasks injected here -->
+            </div>
+        </div>
+
         <hr style="margin: 25px 0 15px 0; border: 0; border-top: 1px solid var(--border);">
         <h4 data-i18n="header_completed_tasks" style="color: var(--sub-text);">Completed Tasks</h4>
         <div id="completedTasksList" class="log-list" style="opacity: 0.7;"></div>
@@ -229,11 +340,8 @@
         </div>
         
         <div id="statText" style="font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:15px;"></div>
-        
         <div class="stat-bar" id="statBar"></div>
-        
         <canvas id="overlapChart" width="250" height="250"></canvas>
-        
         <ul id="statLegend" style="list-style:none; padding:0; margin-top:20px;"></ul>
     </div>
 
@@ -375,6 +483,12 @@
         <label data-i18n="label_title">Title</label>
         <input type="text" id="taskInputTitle" placeholder="Task description...">
 
+        <label>Placement Container</label>
+        <select id="taskContainerSelect">
+            <option value="null">Unassigned / Inbox</option>
+            <!-- Containers populated via JS -->
+        </select>
+
         <label data-i18n="label_deadline_type">Deadline Type</label>
         <select id="taskPeriodType" onchange="renderTaskPeriodUI()">
             <option value="none" data-i18n="opt_none">No Deadline</option>
@@ -462,8 +576,7 @@ const translations = {
     label_title: "제목", label_segments: "구간", label_tags: "라벨", btn_add_segment: "+ 구간 추가",
     btn_delete: "삭제", btn_cancel: "취소", msg_no_data: "데이터 없음", msg_total_focus: "총 집중 시간",
     alert_delete_record: "삭제하시겠습니까?", alert_reset: "정말 초기화 하시겠습니까?", header_day_stats: "일간 통계",
-    // Task Tab Translations
-    header_tasks: "할 일 목록", header_completed_tasks: "완료된 항목", btn_add_task: "+ 할 일 추가",
+    header_tasks: "태스크 보드", header_completed_tasks: "완료된 항목", btn_add_task: "+ 할 일 추가",
     header_add_edit_task: "할 일 추가/수정", label_deadline_type: "기한 설정", label_target_date: "목표 날짜 (반복 시작일)",
     opt_none: "기한 없음", opt_stats: "통계 기간에 맞춤", opt_custom: "특정 날짜", 
     opt_weekly: "매주 반복", opt_biweekly: "격주 반복", opt_monthly: "매월 반복", opt_yearly: "매년 반복",
@@ -490,8 +603,7 @@ const translations = {
     label_title: "Title", label_segments: "Segments", label_tags: "Labels", btn_add_segment: "+ Segment",
     btn_delete: "Delete", btn_cancel: "Cancel", msg_no_data: "No Data", msg_total_focus: "Total Focus",
     alert_delete_record: "Delete record?", alert_reset: "Reset all data?", header_day_stats: "Daily Stats",
-    // Task Tab Translations
-    header_tasks: "Task List", header_completed_tasks: "Completed Tasks", btn_add_task: "+ Add Task",
+    header_tasks: "Task Board", header_completed_tasks: "Completed Tasks", btn_add_task: "+ Add Task",
     header_add_edit_task: "Add/Edit Task", label_deadline_type: "Deadline Type", label_target_date: "Target Date (Start Date for Repeats)",
     opt_none: "No Deadline", opt_stats: "Match Stats Period", opt_custom: "Specific Date", 
     opt_weekly: "Repeat Weekly", opt_biweekly: "Repeat Biweekly", opt_monthly: "Repeat Monthly", opt_yearly: "Repeat Yearly",
@@ -518,8 +630,7 @@ const translations = {
     label_title: "Título", label_segments: "Segmentos", label_tags: "Etiquetas", btn_add_segment: "+ Segmento",
     btn_delete: "Eliminar", btn_cancel: "Cancelar", msg_no_data: "Sin Datos", msg_total_focus: "Tiempo Total",
     alert_delete_record: "¿Eliminar?", alert_reset: "¿Reiniciar todo?", header_day_stats: "Estadísticas Diarias",
-    // Task Tab Translations
-    header_tasks: "Lista de Tareas", header_completed_tasks: "Tareas Completadas", btn_add_task: "+ Añadir Tarea",
+    header_tasks: "Tablero de Tareas", header_completed_tasks: "Tareas Completadas", btn_add_task: "+ Añadir Tarea",
     header_add_edit_task: "Añadir/Editar Tarea", label_deadline_type: "Tipo de Fecha Límite", label_target_date: "Fecha Objetivo",
     opt_none: "Sin Límite", opt_stats: "Coincidir Periodo", opt_custom: "Fecha Específica", 
     opt_weekly: "Repetir Semanal", opt_biweekly: "Repetir Quincenal", opt_monthly: "Repetir Mensual", opt_yearly: "Repetir Anual",
@@ -532,7 +643,10 @@ function t(key){ return (translations[currentLang] && translations[currentLang][
 
 /* ---------------- State & Settings ---------------- */
 let logs = JSON.parse(localStorage.getItem('logs')) || [];
-let tasks = JSON.parse(localStorage.getItem('tasks_v1')) || [];
+let tasks = JSON.parse(localStorage.getItem('tasks_v2')) || [];
+let containers = JSON.parse(localStorage.getItem('task_containers_v1')) || [
+    { id: 1, title: "Main Goals", color: "#e7f5ff", columnIndex: 0, orderInColumn: 0 }
+];
 let dailyNotes = JSON.parse(localStorage.getItem('dailyNotes_v1')) || {};
 let labels = JSON.parse(localStorage.getItem('labels')) || ['Study','Work','Exercise'];
 let selectedLabels = new Set();
@@ -542,14 +656,12 @@ let currentDate = new Date();
 let recordsCurrentLimit = 10;
 let clickTimer = null; 
 
-// Stats Settings
+let draggedTaskElement = null; // Used for Drag & Drop State
+
 const STATS_KEY = "statsSettings_v2";
 let statsSettings = JSON.parse(localStorage.getItem(STATS_KEY)) || { mode: "weekly", daysN: 7, daysStartDate: null, weekStartDow: 1 };
-
 const BUDS_KEY = "budsSettings_v3";
 let budsSettings = JSON.parse(localStorage.getItem(BUDS_KEY)) || {};
-
-// Global Stats Chunks
 let currentStatsChunks = [];
 
 /* ---------------- Initialization ---------------- */
@@ -559,19 +671,31 @@ renderLabels();
 renderRecentLogsTimer();
 updateButtons();
 hydrateSettingsUI();
-// Initial prep for tasks
 currentStatsChunks = generateStatsChunks(); 
+
+// Migrate legacy tasks to V2 (with container support)
+function migrateTasks() {
+    let legacyTasks = JSON.parse(localStorage.getItem('tasks_v1'));
+    if (legacyTasks && !localStorage.getItem('tasks_v2')) {
+        tasks = legacyTasks.map((t, idx) => ({ ...t, containerId: null, order: idx }));
+        saveTasks();
+    } else {
+        // Ensure new fields exist for resilience
+        tasks.forEach((t, i) => { 
+            if (t.containerId === undefined) t.containerId = null; 
+            if (t.order === undefined) t.order = i; 
+        });
+    }
+}
+migrateTasks();
 
 /* ---------------- Core Functions ---------------- */
 function updateAllTexts(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     if(key) {
-        if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.placeholder) {
-            el.placeholder = t(key);
-        } else {
-            el.innerText = t(key);
-        }
+        if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.placeholder) el.placeholder = t(key);
+        else el.innerText = t(key);
     }
   });
   document.getElementById('taskTitle').placeholder = t('ph_task');
@@ -590,18 +714,15 @@ function saveData(){
   localStorage.setItem('logs', JSON.stringify(logs));
   localStorage.setItem('labels', JSON.stringify(labels));
 }
+function saveTasks() { localStorage.setItem('tasks_v2', JSON.stringify(tasks)); }
+function saveContainers() { localStorage.setItem('task_containers_v1', JSON.stringify(containers)); }
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatHMS(ms){
-  const sec = Math.floor(ms/1000);
-  const h = Math.floor(sec/3600);
-  const m = Math.floor((sec%3600)/60);
+  const sec = Math.floor(ms/1000); const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60);
   return `${pad(h)}:${pad(m)}:${pad(sec%60)}`;
 }
 function msToHM(ms){
-    const sec = Math.floor(ms/1000);
-    const h = Math.floor(sec/3600);
-    const m = Math.floor((sec%3600)/60);
-    return { h, m };
+    const sec = Math.floor(ms/1000); const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60); return { h, m };
 }
 
 /* ---------------- Timer Logic ---------------- */
@@ -617,8 +738,7 @@ function startTimer(){
   updateButtons();
 }
 function pauseTimer(){
-  if(!isRunning) return;
-  closeSegment(Date.now());
+  if(!isRunning) return; closeSegment(Date.now());
   clearInterval(timerInterval); isRunning = false;
   document.getElementById('display').innerText = formatHMS(activeMs);
   updateButtons();
@@ -626,117 +746,265 @@ function pauseTimer(){
 function stopTimer(){
   if(logStartMs == null && activeMs === 0 && segments.length === 0) return;
   if(isRunning) closeSegment(Date.now());
-  commitLog(Date.now());
-  resetTimer();
+  commitLog(Date.now()); resetTimer();
 }
 function recordLap(){
   if(isRunning) closeSegment(Date.now());
   if(activeMs < 1000) return; 
-  commitLog(Date.now());
-  resetTimer();
+  commitLog(Date.now()); resetTimer();
   if(isRunning) startTimer();
 }
 function closeSegment(end){
-  if(sessionStartMs){
-     segments.push({startMs: sessionStartMs, endMs: end});
-     activeMs += (end - sessionStartMs);
-     sessionStartMs = null;
-  }
+  if(sessionStartMs){ segments.push({startMs: sessionStartMs, endMs: end}); activeMs += (end - sessionStartMs); sessionStartMs = null; }
 }
 function commitLog(end){
   const title = document.getElementById('taskTitle').value.trim() || "Untitled";
   const start = segments.length ? segments[0].startMs : end;
   const finalEnd = segments.length ? Math.max(...segments.map(s=>s.endMs)) : end;
-  logs.unshift({
-    id: Date.now(), title, labels: Array.from(selectedLabels),
-    startMs: start, endMs: finalEnd, activeMs, segments, createdAt: end
-  });
-  saveData();
-  renderRecentLogsTimer();
+  logs.unshift({ id: Date.now(), title, labels: Array.from(selectedLabels), startMs: start, endMs: finalEnd, activeMs, segments, createdAt: end });
+  saveData(); renderRecentLogsTimer();
 }
 function resetTimer(){
   clearInterval(timerInterval); isRunning=false; sessionStartMs=null; logStartMs=null; activeMs=0; segments=[];
-  document.getElementById('display').innerText = "00:00:00";
-  updateButtons();
+  document.getElementById('display').innerText = "00:00:00"; updateButtons();
 }
 function updateButtons(){
   document.getElementById('btnStart').disabled = isRunning;
   document.getElementById('btnPause').disabled = !isRunning;
   const hasData = (isRunning || activeMs > 0);
-  document.getElementById('btnLap').disabled = !hasData;
-  document.getElementById('btnStop').disabled = !hasData;
+  document.getElementById('btnLap').disabled = !hasData; document.getElementById('btnStop').disabled = !hasData;
 }
 
-/* ---------------- Task List Logic (NEW) ---------------- */
-function saveTasks() {
-    localStorage.setItem('tasks_v1', JSON.stringify(tasks));
-}
-
+/* ---------------- Tasks Kanban Logic ---------------- */
 function getStatsEndDateStr() {
     if(!currentStatsChunks || currentStatsChunks.length === 0) currentStatsChunks = generateStatsChunks();
     if(currentStatsChunks.length > 0) {
-        const date = new Date(currentStatsChunks[0].end); // End of current period
+        const date = new Date(currentStatsChunks[0].end);
         return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
     }
     return "";
 }
 
 function renderTasksPage() {
-    const activeList = document.getElementById('activeTasksList');
+    const board = document.getElementById('taskBoardContainer');
+    const unassignedZone = document.getElementById('unassignedZone');
     const compList = document.getElementById('completedTasksList');
-    activeList.innerHTML = ''; compList.innerHTML = '';
+    
+    board.innerHTML = ''; unassignedZone.innerHTML = ''; compList.innerHTML = '';
 
-    // Sort: active tasks first by creation date. Completed by completion status.
-    tasks.sort((a,b) => b.createdAt - a.createdAt);
+    const activeTasks = tasks.filter(t => !t.completed);
+    const completedTasks = tasks.filter(t => t.completed).sort((a,b) => b.createdAt - a.createdAt);
 
-    tasks.forEach(tObj => {
-        const div = document.createElement('div');
-        div.className = 'log-item' + (tObj.completed ? ' task-completed' : '');
-        div.style.justifyContent = 'flex-start';
-        div.style.padding = '8px 0';
-
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.className = 'task-checkbox';
-        cb.checked = tObj.completed;
-        cb.onchange = () => toggleTaskComplete(tObj.id);
-
-        const info = document.createElement('div');
-        info.className = 'task-info-block';
-        info.onclick = () => openTaskModal(tObj.id);
-
-        let dateText = "";
-        if (tObj.periodType === 'stats') {
-            dateText = `⏳ ${t("opt_stats")} (Due: ${getStatsEndDateStr()})`;
-        } else if (tObj.periodType === 'custom' && tObj.targetDate) {
-            dateText = `📅 ${tObj.targetDate}`;
-        } else if (['weekly','biweekly','monthly','yearly'].includes(tObj.periodType)) {
-            dateText = `🔁 ${t("opt_"+tObj.periodType)} (Next: ${tObj.targetDate || 'Not set'})`;
-            if (tObj.endDate) dateText += ` | Until: ${tObj.endDate}`;
-        }
-
-        const taskBadges = (tObj.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
-
-        info.innerHTML = `
-            <div class="task-title-text">${tObj.title} ${taskBadges}</div>
-            ${dateText ? `<div class="task-meta-text">${dateText}</div>` : ''}
-        `;
-
-        div.appendChild(cb);
-        div.appendChild(info);
-
-        if (tObj.completed) compList.appendChild(div);
-        else activeList.appendChild(div);
+    // Group containers by columns
+    const colsMap = {};
+    containers.forEach(c => {
+        if (!colsMap[c.columnIndex]) colsMap[c.columnIndex] = [];
+        colsMap[c.columnIndex].push(c);
     });
+    const maxCol = Math.max(0, ...Object.keys(colsMap).map(Number));
+
+    // Render Columns & Containers
+    for (let i = 0; i <= maxCol; i++) {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'kanban-col';
+        
+        const colContainers = colsMap[i] || [];
+        colContainers.sort((a,b) => a.orderInColumn - b.orderInColumn);
+
+        colContainers.forEach(cont => {
+            const box = document.createElement('div');
+            box.className = 'container-box';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'container-header';
+            header.style.backgroundColor = cont.color || '#e7f5ff';
+            
+            header.innerHTML = `
+                <input type="color" class="container-color-picker" title="Change Color" value="${cont.color}" onchange="updateContainerColor(${cont.id}, this.value)">
+                <div class="container-title" contenteditable="true" onblur="renameContainer(${cont.id}, this.innerText)">${cont.title}</div>
+                <div class="container-actions"><button onclick="deleteContainer(${cont.id})" title="Delete Container">🗑</button></div>
+            `;
+
+            // Dropzone
+            const dropzone = document.createElement('div');
+            dropzone.className = 'task-dropzone';
+            dropzone.dataset.containerId = cont.id;
+            setupDropzoneEvents(dropzone);
+
+            // Populate Tasks in this container
+            const contTasks = activeTasks.filter(t => t.containerId === cont.id).sort((a,b) => a.order - b.order);
+            contTasks.forEach(t => dropzone.appendChild(createTaskCard(t)));
+
+            box.appendChild(header);
+            box.appendChild(dropzone);
+            colDiv.appendChild(box);
+        });
+
+        // Add container button at bottom of col
+        const btn = document.createElement('button');
+        btn.innerText = "+ Add Container Here";
+        btn.className = "btn-outline btn-sm";
+        btn.onclick = () => createNewContainer(i);
+        colDiv.appendChild(btn);
+
+        board.appendChild(colDiv);
+    }
+
+    // "Add new layer" right-most button
+    const addLayerBtn = document.createElement('button');
+    addLayerBtn.className = 'add-layer-btn';
+    addLayerBtn.innerText = "+ Add New Layer";
+    addLayerBtn.onclick = () => createNewContainer(maxCol + 1);
+    board.appendChild(addLayerBtn);
+
+    // Populate Unassigned Tasks
+    setupDropzoneEvents(unassignedZone);
+    const unassignedTasks = activeTasks.filter(t => t.containerId == null).sort((a,b) => a.order - b.order);
+    unassignedTasks.forEach(t => unassignedZone.appendChild(createTaskCard(t)));
+
+    // Populate Completed Tasks
+    completedTasks.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'log-item task-completed';
+        div.style.justifyContent = 'flex-start'; div.style.padding = '8px 0';
+
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'task-checkbox'; cb.checked = true;
+        cb.onchange = () => toggleTaskComplete(t.id);
+
+        const info = document.createElement('div'); info.className = 'task-info-block'; info.onclick = () => openTaskModal(t.id);
+        const taskBadges = (t.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
+        info.innerHTML = `<div class="task-title-text" style="color:#adb5bd; text-decoration:line-through;">${t.title} ${taskBadges}</div>`;
+        
+        div.appendChild(cb); div.appendChild(info);
+        compList.appendChild(div);
+    });
+
+    // Populate Container Select in Modal
+    const select = document.getElementById('taskContainerSelect');
+    const existingVal = select.value;
+    select.innerHTML = '<option value="null">Unassigned / Inbox</option>';
+    containers.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.title} (Layer ${c.columnIndex})</option>`; });
+    select.value = existingVal || "null";
 }
 
+// Container CRUD
+function createNewContainer(colIdx) {
+    const title = prompt("Container Title:", "New Group");
+    if (!title) return;
+    const colContainers = containers.filter(c => c.columnIndex === colIdx);
+    const order = colContainers.length > 0 ? Math.max(...colContainers.map(c => c.orderInColumn)) + 1 : 0;
+    
+    containers.push({ id: Date.now(), title, color: "#f8f9fa", columnIndex: colIdx, orderInColumn: order });
+    saveContainers(); renderTasksPage();
+}
+function updateContainerColor(id, color) {
+    const c = containers.find(x => x.id === id); if(c) { c.color = color; saveContainers(); renderTasksPage(); }
+}
+function renameContainer(id, newTitle) {
+    if(!newTitle.trim()) return;
+    const c = containers.find(x => x.id === id); if(c) { c.title = newTitle; saveContainers(); }
+}
+function deleteContainer(id) {
+    if(!confirm("Delete this container? Tasks will be moved to Unassigned.")) return;
+    containers = containers.filter(c => c.id !== id);
+    tasks.forEach(t => { if(t.containerId === id) t.containerId = null; });
+    saveContainers(); saveTasks(); renderTasksPage();
+}
+
+// Drag and Drop Implementations
+function createTaskCard(tObj) {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.draggable = true;
+    card.dataset.id = tObj.id;
+
+    // Drag Listeners
+    card.addEventListener('dragstart', function(e) {
+        draggedTaskElement = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+        setTimeout(() => this.classList.add('dragging'), 0);
+    });
+    card.addEventListener('dragend', function(e) {
+        this.classList.remove('dragging');
+        draggedTaskElement = null;
+        persistBoardState();
+    });
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'task-checkbox';
+    cb.checked = tObj.completed;
+    cb.onchange = () => toggleTaskComplete(tObj.id);
+
+    const info = document.createElement('div');
+    info.className = 'task-info-block';
+    info.onclick = () => openTaskModal(tObj.id);
+
+    let dateText = "";
+    if (tObj.periodType === 'stats') dateText = `⏳ Match Stats`;
+    else if (tObj.periodType === 'custom' && tObj.targetDate) dateText = `📅 ${tObj.targetDate}`;
+    else if (['weekly','biweekly','monthly','yearly'].includes(tObj.periodType)) dateText = `🔁 Repeat`;
+
+    const taskBadges = (tObj.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
+    info.innerHTML = `
+        <div class="task-title-text">${tObj.title} ${taskBadges}</div>
+        ${dateText ? `<div class="task-meta-text">${dateText}</div>` : ''}
+    `;
+
+    card.appendChild(cb); card.appendChild(info);
+    return card;
+}
+
+function setupDropzoneEvents(zone) {
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+        
+        const afterElement = getDragAfterElement(this, e.clientY);
+        if (afterElement == null) this.appendChild(draggedTaskElement);
+        else this.insertBefore(draggedTaskElement, afterElement);
+    });
+    zone.addEventListener('dragleave', function(e) { this.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function(e) { this.classList.remove('drag-over'); });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+        else return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function persistBoardState() {
+    document.querySelectorAll('.task-dropzone').forEach(zone => {
+        const cIdStr = zone.dataset.containerId;
+        const cId = cIdStr === "null" ? null : Number(cIdStr);
+        const taskEls = zone.querySelectorAll('.task-card');
+        
+        taskEls.forEach((el, index) => {
+            const taskId = Number(el.dataset.id);
+            const taskObj = tasks.find(t => t.id === taskId);
+            if(taskObj) { taskObj.containerId = cId; taskObj.order = index; }
+        });
+    });
+    saveTasks();
+    renderTasksPage(); // Re-render ensures UI states refresh smoothly
+}
+
+
+// Task Modification Modals
 function openTaskModal(id=null) {
     const modal = document.getElementById('taskModal');
     if(id) {
-        const tObj = tasks.find(x => x.id === id);
-        if(!tObj) return;
+        const tObj = tasks.find(x => x.id === id); if(!tObj) return;
         document.getElementById('editTaskId').value = tObj.id;
         document.getElementById('taskInputTitle').value = tObj.title;
+        document.getElementById('taskContainerSelect').value = tObj.containerId || 'null';
         document.getElementById('taskPeriodType').value = tObj.periodType || 'none';
         document.getElementById('taskCustomDate').value = tObj.targetDate || '';
         document.getElementById('taskEndDate').value = tObj.endDate || '';
@@ -745,32 +1013,25 @@ function openTaskModal(id=null) {
     } else {
         document.getElementById('editTaskId').value = '';
         document.getElementById('taskInputTitle').value = '';
+        document.getElementById('taskContainerSelect').value = 'null';
         document.getElementById('taskPeriodType').value = 'none';
         document.getElementById('taskCustomDate').value = '';
         document.getElementById('taskEndDate').value = '';
         document.getElementById('btnDeleteTask').style.display = 'none';
         selectedTaskLabels = new Set();
     }
-    renderTaskLabels();
-    renderTaskPeriodUI();
+    renderTaskLabels(); renderTaskPeriodUI();
     modal.style.display = 'flex';
 }
 
 function renderTaskLabels() {
-    const con = document.getElementById('taskLabelSelector');
-    con.innerHTML = '';
+    const con = document.getElementById('taskLabelSelector'); con.innerHTML = '';
     labels.forEach(l => {
-        const c = document.createElement('div');
-        c.className = `label-chip ${selectedTaskLabels.has(l) ? 'selected' : ''}`;
-        c.innerText = l;
-        c.onclick = () => {
-            selectedTaskLabels.has(l) ? selectedTaskLabels.delete(l) : selectedTaskLabels.add(l);
-            renderTaskLabels();
-        };
+        const c = document.createElement('div'); c.className = `label-chip ${selectedTaskLabels.has(l) ? 'selected' : ''}`;
+        c.innerText = l; c.onclick = () => { selectedTaskLabels.has(l) ? selectedTaskLabels.delete(l) : selectedTaskLabels.add(l); renderTaskLabels(); };
         con.appendChild(c);
     });
 }
-
 function renderTaskPeriodUI() {
     const type = document.getElementById('taskPeriodType').value;
     const needsDate = ['custom', 'weekly', 'biweekly', 'monthly', 'yearly'].includes(type);
@@ -782,90 +1043,58 @@ function renderTaskPeriodUI() {
 function saveTask() {
     const id = document.getElementById('editTaskId').value;
     const title = document.getElementById('taskInputTitle').value.trim();
+    const cIdStr = document.getElementById('taskContainerSelect').value;
     const periodType = document.getElementById('taskPeriodType').value;
-    const targetDate = document.getElementById('taskCustomDate').value;
-    const endDate = document.getElementById('taskEndDate').value;
-
+    
     if(!title) return alert("Title is required");
 
     const taskData = {
-        id: id ? Number(id) : Date.now(),
-        title,
-        periodType,
-        targetDate,
-        endDate: ['weekly','biweekly','monthly','yearly'].includes(periodType) ? endDate : null,
+        id: id ? Number(id) : Date.now(), title, periodType,
+        containerId: cIdStr === "null" ? null : Number(cIdStr),
+        targetDate: document.getElementById('taskCustomDate').value,
+        endDate: ['weekly','biweekly','monthly','yearly'].includes(periodType) ? document.getElementById('taskEndDate').value : null,
         labels: Array.from(selectedTaskLabels),
         completed: id ? tasks.find(x=>x.id==id).completed : false,
-        createdAt: id ? tasks.find(x=>x.id==id).createdAt : Date.now()
+        createdAt: id ? tasks.find(x=>x.id==id).createdAt : Date.now(),
+        order: id ? tasks.find(x=>x.id==id).order : 99999
     };
 
-    if(id) {
-        const idx = tasks.findIndex(x => x.id == id);
-        if(idx !== -1) tasks[idx] = taskData;
-    } else {
-        tasks.unshift(taskData);
-    }
+    if(id) { const idx = tasks.findIndex(x => x.id == id); if(idx !== -1) tasks[idx] = taskData; }
+    else { tasks.push(taskData); }
     
-    saveTasks();
-    renderTasksPage();
-    closeModal('taskModal');
+    saveTasks(); renderTasksPage(); closeModal('taskModal');
 }
 
 function toggleTaskComplete(id) {
-    const tObj = tasks.find(x => x.id === id);
-    if (!tObj) return;
+    const tObj = tasks.find(x => x.id === id); if (!tObj) return;
 
-    // If uncompleted and it's a recurring task, we complete this instance and spawn the next one.
     if (!tObj.completed && ['weekly','biweekly','monthly','yearly'].includes(tObj.periodType)) {
         tObj.completed = true;
-        
         let nextDateStr = "";
         if(tObj.targetDate) {
-            const d = new Date(tObj.targetDate);
-            // Fix timezone offset issues when bumping date
-            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+            const d = new Date(tObj.targetDate); d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
             if (tObj.periodType === 'weekly') d.setDate(d.getDate() + 7);
             if (tObj.periodType === 'biweekly') d.setDate(d.getDate() + 14);
             if (tObj.periodType === 'monthly') d.setMonth(d.getMonth() + 1);
             if (tObj.periodType === 'yearly') d.setFullYear(d.getFullYear() + 1);
             nextDateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
         }
-
-        if (tObj.endDate && nextDateStr > tObj.endDate) {
-            // Reached end date, do not spawn a new one
-        } else {
-            // Spawn new active instance
-            const newTask = { 
-                ...tObj, 
-                id: Date.now(), 
-                completed: false, 
-                targetDate: nextDateStr,
-                createdAt: Date.now()
-            };
-            tasks.unshift(newTask);
+        if (!(tObj.endDate && nextDateStr > tObj.endDate)) {
+            tasks.push({ ...tObj, id: Date.now(), completed: false, targetDate: nextDateStr, createdAt: Date.now() });
         }
-
-    } else {
-        // Standard toggle
-        tObj.completed = !tObj.completed;
-    }
+    } else { tObj.completed = !tObj.completed; }
     
-    saveTasks();
-    renderTasksPage();
+    saveTasks(); renderTasksPage();
 }
 
 function deleteTask() {
     const id = document.getElementById('editTaskId').value;
     if(confirm(t('alert_delete_record'))) {
-        tasks = tasks.filter(x => x.id != id);
-        saveTasks();
-        renderTasksPage();
-        closeModal('taskModal');
+        tasks = tasks.filter(x => x.id != id); saveTasks(); renderTasksPage(); closeModal('taskModal');
     }
 }
 
-
-/* ---------------- Render Lists ---------------- */
+/* ---------------- Rendering Others (Records, Calendar, Stats, Settings) ---------------- */
 function renderRecentLogsTimer(){
   const list = document.getElementById('recentListTimer'); list.innerHTML = '';
   logs.slice(0, 5).forEach(l => list.appendChild(createLogItem(l)));
@@ -886,8 +1115,6 @@ function createLogItem(log){
     <div><button class="btn-outline btn-sm" onclick="openEditModal(${log.id})">${t('btn_edit')}</button></div>`;
   return li;
 }
-
-/* ---------------- Calendar & Interaction ---------------- */
 function renderCalendar(){
   const grid = document.getElementById('calendarBody'); grid.innerHTML = '';
   const y = currentDate.getFullYear(), m = currentDate.getMonth();
@@ -897,15 +1124,12 @@ function renderCalendar(){
   for(let i=0; i<firstDay.getDay(); i++) grid.appendChild(document.createElement('div'));
   
   const configuredLabels = Object.keys(budsSettings);
-
   for(let d=1; d<=lastDay.getDate(); d++){
     const cell = document.createElement('div'); cell.className = 'cal-cell';
     const dayStart = new Date(y,m,d).getTime(), dayEnd = dayStart + 86400000;
     const dateStr = `${y}-${pad(m+1)}-${pad(d)}`; 
 
-    const labelTotals = {};
-    let dailyTotal = 0;
-
+    const labelTotals = {}; let dailyTotal = 0;
     logs.forEach(l => {
        if(l.segments) {
          let logTotal = 0;
@@ -915,77 +1139,44 @@ function renderCalendar(){
          });
          if(logTotal > 0){
              dailyTotal += logTotal;
-             (l.labels || []).forEach(lab => {
-                 labelTotals[lab] = (labelTotals[lab] || 0) + logTotal;
-             });
+             (l.labels || []).forEach(lab => { labelTotals[lab] = (labelTotals[lab] || 0) + logTotal; });
          }
        }
     });
 
     cell.innerHTML = `<div class="cal-date">${d}</div>`;
-    if(dailyTotal > 0){
-        cell.innerHTML += `<div class="cal-time">${formatHMS(dailyTotal)}</div>`;
-        cell.style.backgroundColor = "#e7f5ff";
-    }
+    if(dailyTotal > 0){ cell.innerHTML += `<div class="cal-time">${formatHMS(dailyTotal)}</div>`; cell.style.backgroundColor = "#e7f5ff"; }
 
     const fails = [];
     configuredLabels.forEach(label => {
-        const settings = budsSettings[label];
-        if(!settings) return;
+        const s = budsSettings[label]; if(!s) return;
         const timeDone = labelTotals[label] || 0;
+        const isValid = (st, en) => !st || !en || (dateStr >= st && dateStr <= en);
         
-        // Helper to check general validity and specific seed range
-        const isValidPeriod = (start, end) => !start || !end || isDateInRange(dateStr, start, end);
-
-        // Axillary
-        const ax = settings.axillary;
-        if(ax.mode !== 'none' && isValidPeriod(ax.validStart, ax.validEnd)) {
-            let check = false;
-            if(ax.mode === 'stat') check = true;
-            else if(ax.mode === 'seed' && isDateInRange(dateStr, ax.seedStart, ax.seedEnd)) check = true;
-            
-            if(check && timeDone < ax.ms) { cell.classList.add('bud-fail-axillary'); fails.push(`${label} < Min`); }
+        const ax = s.axillary;
+        if(ax.mode !== 'none' && isValid(ax.validStart, ax.validEnd)) {
+            let chk = (ax.mode === 'stat' || (ax.mode === 'seed' && dateStr >= ax.seedStart && dateStr <= ax.seedEnd));
+            if(chk && timeDone < ax.ms) { cell.classList.add('bud-fail-axillary'); fails.push(`${label} < Min`); }
         }
-        
-        // Apical
-        const ap = settings.apical;
-        if(ap.mode !== 'none' && isValidPeriod(ap.validStart, ap.validEnd)) {
-            let check = false;
-            if(ap.mode === 'stat') check = true;
-            else if(ap.mode === 'seed' && isDateInRange(dateStr, ap.seedStart, ap.seedEnd)) check = true;
-            
-            if(check && timeDone > ap.ms) { cell.classList.add('bud-fail-apical'); fails.push(`${label} > Max`); }
+        const ap = s.apical;
+        if(ap.mode !== 'none' && isValid(ap.validStart, ap.validEnd)) {
+            let chk = (ap.mode === 'stat' || (ap.mode === 'seed' && dateStr >= ap.seedStart && dateStr <= ap.seedEnd));
+            if(chk && timeDone > ap.ms) { cell.classList.add('bud-fail-apical'); fails.push(`${label} > Max`); }
         }
     });
-
     cell.setAttribute('data-date', dateStr);
-    if(dailyNotes[dateStr] && dailyNotes[dateStr].trim()) {
-        cell.innerHTML += `<div class="note-dot" title="Has notes"></div>`;
-    }
-
+    if(dailyNotes[dateStr] && dailyNotes[dateStr].trim()) cell.innerHTML += `<div class="note-dot" title="Has notes"></div>`;
     if(fails.length > 0) cell.setAttribute('title', fails.join(', '));
-    cell.onclick = () => handleCellClick(y, m, d);
-    cell.ondblclick = () => handleCellDblClick(y, m, d);
+    cell.onclick = () => handleCellClick(y, m, d); cell.ondblclick = () => handleCellDblClick(y, m, d);
     grid.appendChild(cell);
   }
 }
-
-function isDateInRange(target, start, end){
-    if(!start || !end) return false;
-    return target >= start && target <= end;
-}
 function changeMonth(delta){ currentDate.setMonth(currentDate.getMonth()+delta); renderCalendar(); }
 function vascularGo(){
-    const val = document.getElementById('vascularInput').value; 
-    if(!val) return;
-    const parts = val.split('/');
-    if(parts.length === 3){
-        currentDate = new Date(parts[2], parts[0]-1, parts[1]);
-        renderCalendar();
-    }
+    const val = document.getElementById('vascularInput').value; if(!val) return;
+    const parts = val.split('/'); if(parts.length === 3){ currentDate = new Date(parts[2], parts[0]-1, parts[1]); renderCalendar(); }
 }
 function vascularSet(){ showPage('settings'); document.getElementById('calElementsSection').scrollIntoView(); }
-
 function handleCellClick(y, m, d){
     if(clickTimer) clearTimeout(clickTimer);
     clickTimer = setTimeout(() => {
@@ -996,51 +1187,32 @@ function handleCellClick(y, m, d){
         document.getElementById('calSidePanel').style.display = 'flex';
         document.getElementById('sidePanelDate').innerText = dateStr;
         
-        const logContainer = document.getElementById('sidePanelLogs');
-        logContainer.innerHTML = '';
+        const logContainer = document.getElementById('sidePanelLogs'); logContainer.innerHTML = '';
         if(daysLogs.length === 0) logContainer.innerHTML = `<div style="color:#888; font-size:0.9rem;">${t('msg_no_data')}</div>`;
         else daysLogs.forEach(l => logContainer.appendChild(createLogItem(l))); 
         
-        const noteInput = document.getElementById('sidePanelNotes');
-        noteInput.value = dailyNotes[dateStr] || '';
+        const noteInput = document.getElementById('sidePanelNotes'); noteInput.value = dailyNotes[dateStr] || '';
         noteInput.oninput = (e) => saveDailyNote(dateStr, e.target.value);
     }, 250);
 }
-
 function saveDailyNote(dateStr, text) {
-    if(!text.trim()) {
-        delete dailyNotes[dateStr];
-    } else {
-        dailyNotes[dateStr] = text;
-    }
+    if(!text.trim()) delete dailyNotes[dateStr]; else dailyNotes[dateStr] = text;
     localStorage.setItem('dailyNotes_v1', JSON.stringify(dailyNotes));
-    
     const cell = document.querySelector(`.cal-cell[data-date="${dateStr}"]`);
     if(cell) {
         let dot = cell.querySelector('.note-dot');
-        if(text.trim() && !dot) {
-            cell.innerHTML += `<div class="note-dot" title="Has notes"></div>`;
-        } else if (!text.trim() && dot) {
-            dot.remove();
-        }
+        if(text.trim() && !dot) cell.innerHTML += `<div class="note-dot" title="Has notes"></div>`;
+        else if (!text.trim() && dot) dot.remove();
     }
 }
-
 function handleCellDblClick(y, m, d){
     clearTimeout(clickTimer);
-    const start = new Date(y, m, d).getTime(), end = start + 86400000;
-    let total = 0; const labelMap = {};
+    const start = new Date(y, m, d).getTime(), end = start + 86400000; let total = 0; const labelMap = {};
     logs.forEach(l => {
         if(l.segments){
             let logActive = 0;
-            l.segments.forEach(s => {
-                const a = Math.max(s.startMs, start), b = Math.min(s.endMs, end);
-                if(b > a) logActive += (b-a);
-            });
-            if(logActive > 0){
-                total += logActive;
-                (l.labels||["No Label"]).forEach(lb => labelMap[lb] = (labelMap[lb]||0) + logActive);
-            }
+            l.segments.forEach(s => { const a = Math.max(s.startMs, start), b = Math.min(s.endMs, end); if(b > a) logActive += (b-a); });
+            if(logActive > 0){ total += logActive; (l.labels||["No Label"]).forEach(lb => labelMap[lb] = (labelMap[lb]||0) + logActive); }
         }
     });
     const wrapper = document.createElement('div');
@@ -1049,13 +1221,11 @@ function handleCellDblClick(y, m, d){
         wrapper.innerHTML = `<h4>${t('msg_total_focus')}: ${formatHMS(total)}</h4>`;
         const bar = document.createElement('div'); bar.className = 'stat-bar';
         const legend = document.createElement('ul'); legend.style.listStyle='none'; legend.style.padding=0;
-        const colors = ['#2563eb', '#12b886', '#fab005', '#fa5252', '#7950f2'];
-        let idx = 0;
+        const colors = ['#2563eb', '#12b886', '#fab005', '#fa5252', '#7950f2']; let idx = 0;
         Object.entries(labelMap).sort((a,b)=>b[1]-a[1]).forEach(([lbl, ms]) => {
             const pct = (ms/total)*100; const c = colors[idx % colors.length];
             bar.innerHTML += `<div style="width:${Math.min(pct,100)}%; background:${c}; height:100%;"></div>`;
-            legend.innerHTML += `<li><span style="color:${c}">■</span> ${lbl}: ${formatHMS(ms)} (${pct.toFixed(1)}%)</li>`;
-            idx++;
+            legend.innerHTML += `<li><span style="color:${c}">■</span> ${lbl}: ${formatHMS(ms)} (${pct.toFixed(1)}%)</li>`; idx++;
         });
         wrapper.appendChild(bar); wrapper.appendChild(legend);
     }
@@ -1067,380 +1237,142 @@ function openDayModal(title, contentNode){
     document.getElementById('dayModal').style.display = 'flex';
 }
 function closeModal(id){ document.getElementById(id).style.display = 'none'; }
-
-// Close calendar side panel and any open modals when pressing Space
-// Safeguarded so it doesn't trigger while you are typing inside an input or textarea
 document.addEventListener('keydown', (e) => {
     if (e.key === ' ' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault(); // Prevent page scroll on spacebar
-        // Close calendar side panel
-        const sidePanel = document.getElementById('calSidePanel');
-        if (sidePanel && sidePanel.style.display !== 'none') {
-            sidePanel.style.display = 'none';
-        }
-        
-        // Close any active modals
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            }
-        });
+        e.preventDefault(); 
+        const sidePanel = document.getElementById('calSidePanel'); if (sidePanel && sidePanel.style.display !== 'none') sidePanel.style.display = 'none';
+        document.querySelectorAll('.modal-overlay').forEach(modal => { if (modal.style.display === 'flex') modal.style.display = 'none'; });
     }
 });
 
-
-/* ---------------- Stats Logic (Updated) ---------------- */
 function renderStatsPage() {
-    // 1. Generate available chunks based on settings
-    const chunks = generateStatsChunks();
-    currentStatsChunks = chunks;
-    
-    // 2. Render Selector
-    const sel = document.getElementById('statsChunkSelect');
-    // Preserve selection if possible
-    const prevVal = sel.value; 
-    sel.innerHTML = '';
-    chunks.forEach((c, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.innerText = c.label;
-        sel.appendChild(opt);
-    });
-
-    // Restore or default to 0 (current period)
-    if(prevVal !== "" && chunks[prevVal]) {
-        sel.value = prevVal;
-    } else {
-        sel.value = 0;
-    }
-
-    // 3. Render Chart for the selected chunk
+    const chunks = generateStatsChunks(); currentStatsChunks = chunks;
+    const sel = document.getElementById('statsChunkSelect'); const prevVal = sel.value; sel.innerHTML = '';
+    chunks.forEach((c, idx) => { const opt = document.createElement('option'); opt.value = idx; opt.innerText = c.label; sel.appendChild(opt); });
+    if(prevVal !== "" && chunks[prevVal]) sel.value = prevVal; else sel.value = 0;
     renderStatsChart(sel.value);
 }
-
 function generateStatsChunks() {
-    const mode = statsSettings.mode;
-    const chunks = [];
-    const now = new Date();
-    // Start from Today
-    let pointer = new Date(now);
-    
-    // Generate last 52 periods (1 year approx)
+    const mode = statsSettings.mode; const chunks = []; let pointer = new Date();
     for(let i=0; i<52; i++) {
         let start, end, label;
-        
         if (mode === 'days') {
-            const n = parseInt(statsSettings.daysN) || 7;
-            end = new Date(pointer);
-            end.setHours(23,59,59,999);
-            
-            start = new Date(end);
-            start.setDate(start.getDate() - n + 1);
-            start.setHours(0,0,0,0);
-            
-            // Format: MM/DD - MM/DD
-            label = `${formatDateShort(start)} - ${formatDateShort(end)}`;
-            
-            chunks.push({ start: start.getTime(), end: end.getTime(), label });
-            
-            // Move pointer back
-            pointer.setDate(pointer.getDate() - n);
-            
+            const n = parseInt(statsSettings.daysN) || 7; end = new Date(pointer); end.setHours(23,59,59,999);
+            start = new Date(end); start.setDate(start.getDate() - n + 1); start.setHours(0,0,0,0);
+            label = `${start.getMonth()+1}/${start.getDate()}/${start.getFullYear()} - ${end.getMonth()+1}/${end.getDate()}/${end.getFullYear()}`;
+            chunks.push({ start: start.getTime(), end: end.getTime(), label }); pointer.setDate(pointer.getDate() - n);
         } else if (mode === 'monthly') {
-            // End of current month pointer
-            const y = pointer.getFullYear(), m = pointer.getMonth();
-            start = new Date(y, m, 1, 0, 0, 0, 0);
-            end = new Date(y, m + 1, 0, 23, 59, 59, 999);
-            
-            label = `${start.toLocaleString('default', { month: 'short' })} ${y}`;
-            chunks.push({ start: start.getTime(), end: end.getTime(), label });
-            
-            // Move pointer back to previous month
-            pointer.setDate(0); // Last day of prev month
-            
+            const y = pointer.getFullYear(), m = pointer.getMonth(); start = new Date(y, m, 1, 0, 0, 0, 0); end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+            label = `${start.toLocaleString('default', { month: 'short' })} ${y}`; chunks.push({ start: start.getTime(), end: end.getTime(), label });
+            pointer.setDate(0); 
         } else {
-            // Weekly
-            const startDow = parseInt(statsSettings.weekStartDow) || 1; 
-            const currentDow = pointer.getDay();
-            const dist = (currentDow + 7 - startDow) % 7;
-            
-            // End of this week (based on pointer) is tricky, let's find Start first
-            start = new Date(pointer);
-            start.setDate(pointer.getDate() - dist);
-            start.setHours(0,0,0,0);
-            
-            end = new Date(start);
-            end.setDate(end.getDate() + 6);
-            end.setHours(23,59,59,999);
-            
-            label = `${formatDateShort(start)} - ${formatDateShort(end)}`;
-            chunks.push({ start: start.getTime(), end: end.getTime(), label });
-            
-            // Move pointer back 1 week
-            pointer.setDate(pointer.getDate() - 7);
+            const startDow = parseInt(statsSettings.weekStartDow) || 1;  const dist = (pointer.getDay() + 7 - startDow) % 7;
+            start = new Date(pointer); start.setDate(pointer.getDate() - dist); start.setHours(0,0,0,0);
+            end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23,59,59,999);
+            label = `${start.getMonth()+1}/${start.getDate()}/${start.getFullYear()} - ${end.getMonth()+1}/${end.getDate()}/${end.getFullYear()}`;
+            chunks.push({ start: start.getTime(), end: end.getTime(), label }); pointer.setDate(pointer.getDate() - 7);
         }
     }
     return chunks;
 }
-
-function formatDateShort(date) {
-    return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
-}
-
 function renderStatsChart(chunkIndex) {
-    const chunk = currentStatsChunks[chunkIndex];
-    if(!chunk) return;
-    
-    const range = { start: chunk.start, end: chunk.end };
-
-    // Aggregation
-    const labelStats = {};
-    let totalTime = 0;
-
+    const chunk = currentStatsChunks[chunkIndex]; if(!chunk) return;
+    const labelStats = {}; let totalTime = 0;
     logs.forEach(l => {
-        if (!l.segments) return;
-        let logDurationInPeriod = 0;
-        l.segments.forEach(seg => {
-            const s = Math.max(seg.startMs, range.start);
-            const e = Math.min(seg.endMs, range.end);
-            if (e > s) logDurationInPeriod += (e - s);
-        });
-
-        if (logDurationInPeriod > 0) {
-            totalTime += logDurationInPeriod;
-            (l.labels && l.labels.length > 0 ? l.labels : ["Unlabeled"]).forEach(lbl => {
-                labelStats[lbl] = (labelStats[lbl] || 0) + logDurationInPeriod;
-            });
-        }
+        if (!l.segments) return; let inPeriod = 0;
+        l.segments.forEach(seg => { const s = Math.max(seg.startMs, chunk.start); const e = Math.min(seg.endMs, chunk.end); if (e > s) inPeriod += (e - s); });
+        if (inPeriod > 0) { totalTime += inPeriod; (l.labels && l.labels.length > 0 ? l.labels : ["Unlabeled"]).forEach(lbl => { labelStats[lbl] = (labelStats[lbl] || 0) + inPeriod; }); }
     });
-
     document.getElementById('statText').innerText = t('msg_total_focus') + ": " + formatHMS(totalTime);
-    
-    // Draw Bar & Legend
     const bar = document.getElementById('statBar'); bar.innerHTML = '';
     const legend = document.getElementById('statLegend'); legend.innerHTML = '';
-    
-    if(totalTime === 0) {
-        bar.innerHTML = '<div style="width:100%;text-align:center;color:#888;font-size:0.8rem;">No Data</div>';
-        drawPieChart('overlapChart', []); 
-        return;
-    }
-
+    if(totalTime === 0) { bar.innerHTML = '<div style="width:100%;text-align:center;color:#888;font-size:0.8rem;">No Data</div>'; drawPieChart('overlapChart', []); return; }
     const sorted = Object.entries(labelStats).sort((a, b) => b[1] - a[1]);
-    const colors = ['#4c6ef5', '#22b8cf', '#20c997', '#94d82d', '#fcc419', '#ff922b', '#fa5252'];
-    
-    const chartData = [];
-
+    const colors = ['#4c6ef5', '#22b8cf', '#20c997', '#94d82d', '#fcc419', '#ff922b', '#fa5252']; const chartData = [];
     sorted.forEach(([lbl, ms], i) => {
-        const pct = (ms / totalTime) * 100;
-        const color = colors[i % colors.length];
-        
-        // Bar Seg
-        const seg = document.createElement('div');
-        seg.style.width = pct + '%';
-        seg.style.backgroundColor = color;
-        seg.className = 'stat-seg';
-        bar.appendChild(seg);
-        
-        // Legend
+        const pct = (ms / totalTime) * 100; const color = colors[i % colors.length];
+        const seg = document.createElement('div'); seg.style.width = pct + '%'; seg.style.backgroundColor = color; seg.className = 'stat-seg'; bar.appendChild(seg);
         legend.innerHTML += `<li><span style="color:${color}">■</span> <b>${lbl}</b>: ${formatHMS(ms)} (${pct.toFixed(1)}%)</li>`;
-
-        // Chart Data
         chartData.push({ label: lbl, value: ms, color: color });
     });
-
     drawPieChart('overlapChart', chartData);
 }
-
 function drawPieChart(canvasId, data) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    const radius = Math.min(width, height) / 2;
-    
-    ctx.clearRect(0, 0, width, height);
-    
-    if(data.length === 0) return;
-
-    const total = data.reduce((acc, cur) => acc + cur.value, 0);
-    let startAngle = 0;
-
+    const canvas = document.getElementById(canvasId); const ctx = canvas.getContext('2d');
+    const width = canvas.width; const height = canvas.height; const radius = Math.min(width, height) / 2;
+    ctx.clearRect(0, 0, width, height); if(data.length === 0) return;
+    const total = data.reduce((acc, cur) => acc + cur.value, 0); let startAngle = 0;
     data.forEach(slice => {
         const sliceAngle = (slice.value / total) * 2 * Math.PI;
-        
-        ctx.beginPath();
-        ctx.moveTo(width/2, height/2);
-        ctx.arc(width/2, height/2, radius, startAngle, startAngle + sliceAngle);
-        ctx.closePath();
-        
-        ctx.fillStyle = slice.color;
-        ctx.fill();
-        
-        startAngle += sliceAngle;
+        ctx.beginPath(); ctx.moveTo(width/2, height/2); ctx.arc(width/2, height/2, radius, startAngle, startAngle + sliceAngle); ctx.closePath();
+        ctx.fillStyle = slice.color; ctx.fill(); startAngle += sliceAngle;
     });
-    
-    // Inner White Circle
-    ctx.beginPath();
-    ctx.arc(width/2, height/2, radius * 0.5, 0, 2 * Math.PI);
-    ctx.fillStyle = 'white';
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(width/2, height/2, radius * 0.5, 0, 2 * Math.PI); ctx.fillStyle = 'white'; ctx.fill();
 }
 
-/* ---------------- Settings & Buds ---------------- */
 function hydrateSettingsUI(){
-    document.getElementById('statsMode').value = statsSettings.mode;
-    document.getElementById('statsDaysN').value = statsSettings.daysN;
-    document.getElementById('statsWeekStart').value = statsSettings.weekStartDow;
+    document.getElementById('statsMode').value = statsSettings.mode; document.getElementById('statsDaysN').value = statsSettings.daysN; document.getElementById('statsWeekStart').value = statsSettings.weekStartDow;
     renderStatsSettingsUI();
-    
-    const sel = document.getElementById('budsLabelSelect');
-    const currentVal = sel.value; 
-    sel.innerHTML = '<option value="">Select Label to Configure</option>';
+    const sel = document.getElementById('budsLabelSelect'); const currentVal = sel.value; sel.innerHTML = '<option value="">Select Label to Configure</option>';
     labels.forEach(l => { sel.innerHTML += `<option value="${l}">${l}</option>`; });
-    
-    if(currentVal && labels.includes(currentVal)) {
-        sel.value = currentVal;
-        loadBudsForLabel(currentVal);
-    } else {
-        loadBudsForLabel("");
-    }
+    if(currentVal && labels.includes(currentVal)) { sel.value = currentVal; loadBudsForLabel(currentVal); } else { loadBudsForLabel(""); }
 }
-
 function renderStatsSettingsUI(){
     const m = document.getElementById('statsMode').value;
-    document.getElementById('statsDaysBox').style.display = m==='days'?'block':'none';
-    document.getElementById('statsWeeklyBox').style.display = m==='weekly'?'block':'none';
+    document.getElementById('statsDaysBox').style.display = m==='days'?'block':'none'; document.getElementById('statsWeeklyBox').style.display = m==='weekly'?'block':'none';
 }
-
 function loadBudsForLabel(label){
-    const def = { 
-        axillary: { mode: 'none', ms: 0, seedStart: null, seedEnd: null, validStart: null, validEnd: null }, 
-        apical: { mode: 'none', ms: 0, seedStart: null, seedEnd: null, validStart: null, validEnd: null } 
-    };
+    const def = { axillary: { mode: 'none', ms: 0 }, apical: { mode: 'none', ms: 0 } };
     const s = (label && budsSettings[label]) ? budsSettings[label] : def;
-    
-    // Helper to safely get nested properties or default
     const getVal = (obj, key) => obj && obj[key] ? obj[key] : "";
-
-    // Axillary
     document.getElementById('axillaryMode').value = getVal(s.axillary, 'mode') || 'none';
-    const axHM = msToHM(s.axillary.ms || 0);
-    document.getElementById('axillaryH').value = axHM.h;
-    document.getElementById('axillaryM').value = axHM.m;
-    document.getElementById('axillarySeedStart').value = getVal(s.axillary, 'seedStart');
-    document.getElementById('axillarySeedEnd').value = getVal(s.axillary, 'seedEnd');
-    document.getElementById('axillaryValidStart').value = getVal(s.axillary, 'validStart');
-    document.getElementById('axillaryValidEnd').value = getVal(s.axillary, 'validEnd');
-
-    // Apical
+    const axHM = msToHM(s.axillary.ms || 0); document.getElementById('axillaryH').value = axHM.h; document.getElementById('axillaryM').value = axHM.m;
+    document.getElementById('axillarySeedStart').value = getVal(s.axillary, 'seedStart'); document.getElementById('axillarySeedEnd').value = getVal(s.axillary, 'seedEnd');
+    document.getElementById('axillaryValidStart').value = getVal(s.axillary, 'validStart'); document.getElementById('axillaryValidEnd').value = getVal(s.axillary, 'validEnd');
     document.getElementById('apicalMode').value = getVal(s.apical, 'mode') || 'none';
-    const apHM = msToHM(s.apical.ms || 0);
-    document.getElementById('apicalH').value = apHM.h;
-    document.getElementById('apicalM').value = apHM.m;
-    document.getElementById('apicalSeedStart').value = getVal(s.apical, 'seedStart');
-    document.getElementById('apicalSeedEnd').value = getVal(s.apical, 'seedEnd');
-    document.getElementById('apicalValidStart').value = getVal(s.apical, 'validStart');
-    document.getElementById('apicalValidEnd').value = getVal(s.apical, 'validEnd');
-
+    const apHM = msToHM(s.apical.ms || 0); document.getElementById('apicalH').value = apHM.h; document.getElementById('apicalM').value = apHM.m;
+    document.getElementById('apicalSeedStart').value = getVal(s.apical, 'seedStart'); document.getElementById('apicalSeedEnd').value = getVal(s.apical, 'seedEnd');
+    document.getElementById('apicalValidStart').value = getVal(s.apical, 'validStart'); document.getElementById('apicalValidEnd').value = getVal(s.apical, 'validEnd');
     renderBudsUI();
 }
-
 function renderBudsUI(){
-    const axM = document.getElementById('axillaryMode').value;
-    document.getElementById('axillaryTimeBox').style.display = axM!=='none'?'block':'none';
-    document.getElementById('axillarySeedBox').style.display = axM==='seed'?'block':'none';
-    const apM = document.getElementById('apicalMode').value;
-    document.getElementById('apicalTimeBox').style.display = apM!=='none'?'block':'none';
-    document.getElementById('apicalSeedBox').style.display = apM==='seed'?'block':'none';
+    const axM = document.getElementById('axillaryMode').value; document.getElementById('axillaryTimeBox').style.display = axM!=='none'?'block':'none'; document.getElementById('axillarySeedBox').style.display = axM==='seed'?'block':'none';
+    const apM = document.getElementById('apicalMode').value; document.getElementById('apicalTimeBox').style.display = apM!=='none'?'block':'none'; document.getElementById('apicalSeedBox').style.display = apM==='seed'?'block':'none';
 }
-
 function saveStatsSettings(){
-    statsSettings.mode = document.getElementById('statsMode').value;
-    statsSettings.daysN = document.getElementById('statsDaysN').value;
-    statsSettings.weekStartDow = document.getElementById('statsWeekStart').value;
-    localStorage.setItem(STATS_KEY, JSON.stringify(statsSettings));
-    
-    // Regenerate chunks to update everywhere
-    currentStatsChunks = generateStatsChunks();
-    
-    document.getElementById('statsSettingsSavedHint').style.display='block';
-    setTimeout(()=>document.getElementById('statsSettingsSavedHint').style.display='none', 1500);
-    
-    // Refresh pages that depend on stats period
-    if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage();
-    if(document.getElementById('page-tasks').classList.contains('active')) renderTasksPage();
+    statsSettings.mode = document.getElementById('statsMode').value; statsSettings.daysN = document.getElementById('statsDaysN').value; statsSettings.weekStartDow = document.getElementById('statsWeekStart').value;
+    localStorage.setItem(STATS_KEY, JSON.stringify(statsSettings)); currentStatsChunks = generateStatsChunks();
+    document.getElementById('statsSettingsSavedHint').style.display='block'; setTimeout(()=>document.getElementById('statsSettingsSavedHint').style.display='none', 1500);
+    if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage(); if(document.getElementById('page-tasks').classList.contains('active')) renderTasksPage();
 }
-
 function saveBudsSettings(){
-    const label = document.getElementById('budsLabelSelect').value;
-    if(!label) return alert("Please select a label first");
-    const axH = parseInt(document.getElementById('axillaryH').value)||0;
-    const axM = parseInt(document.getElementById('axillaryM').value)||0;
-    const apH = parseInt(document.getElementById('apicalH').value)||0;
-    const apM = parseInt(document.getElementById('apicalM').value)||0;
-    
+    const label = document.getElementById('budsLabelSelect').value; if(!label) return alert("Please select a label first");
+    const axH = parseInt(document.getElementById('axillaryH').value)||0; const axM = parseInt(document.getElementById('axillaryM').value)||0;
+    const apH = parseInt(document.getElementById('apicalH').value)||0; const apM = parseInt(document.getElementById('apicalM').value)||0;
     budsSettings[label] = {
-        axillary: {
-            mode: document.getElementById('axillaryMode').value,
-            ms: (axH*3600 + axM*60)*1000,
-            seedStart: document.getElementById('axillarySeedStart').value,
-            seedEnd: document.getElementById('axillarySeedEnd').value,
-            validStart: document.getElementById('axillaryValidStart').value,
-            validEnd: document.getElementById('axillaryValidEnd').value
-        },
-        apical: {
-            mode: document.getElementById('apicalMode').value,
-            ms: (apH*3600 + apM*60)*1000,
-            seedStart: document.getElementById('apicalSeedStart').value,
-            seedEnd: document.getElementById('apicalSeedEnd').value,
-            validStart: document.getElementById('apicalValidStart').value,
-            validEnd: document.getElementById('apicalValidEnd').value
-        }
+        axillary: { mode: document.getElementById('axillaryMode').value, ms: (axH*3600 + axM*60)*1000, seedStart: document.getElementById('axillarySeedStart').value, seedEnd: document.getElementById('axillarySeedEnd').value, validStart: document.getElementById('axillaryValidStart').value, validEnd: document.getElementById('axillaryValidEnd').value },
+        apical: { mode: document.getElementById('apicalMode').value, ms: (apH*3600 + apM*60)*1000, seedStart: document.getElementById('apicalSeedStart').value, seedEnd: document.getElementById('apicalSeedEnd').value, validStart: document.getElementById('apicalValidStart').value, validEnd: document.getElementById('apicalValidEnd').value }
     };
-    localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings));
-    alert(t('msg_saved'));
-    renderCalendar(); // Refresh calendar to show changes
+    localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings)); alert(t('msg_saved')); renderCalendar();
 }
-
-/* ---------------- Labels Management ---------------- */
 function renderLabels(){
-    const con = document.getElementById('labelSelector'), man = document.getElementById('manageLabelsList');
-    con.innerHTML=''; man.innerHTML='';
+    const con = document.getElementById('labelSelector'), man = document.getElementById('manageLabelsList'); con.innerHTML=''; man.innerHTML='';
     labels.forEach(l=>{
-        const c = document.createElement('div'); c.className = `label-chip ${selectedLabels.has(l)?'selected':''}`;
-        c.innerText=l; c.onclick=()=>{ selectedLabels.has(l)?selectedLabels.delete(l):selectedLabels.add(l); renderLabels(); };
-        con.appendChild(c);
+        const c = document.createElement('div'); c.className = `label-chip ${selectedLabels.has(l)?'selected':''}`; c.innerText=l; c.onclick=()=>{ selectedLabels.has(l)?selectedLabels.delete(l):selectedLabels.add(l); renderLabels(); }; con.appendChild(c);
         const mc = document.createElement('div'); mc.className='label-chip'; mc.innerText=`${l} (x)`;
-        mc.onclick=()=>{ if(confirm(t('alert_delete_record')+" "+l)){ 
-            if(budsSettings[l]) { delete budsSettings[l]; localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings)); }
-            labels=labels.filter(x=>x!==l); selectedLabels.delete(l); saveData(); renderLabels(); hydrateSettingsUI(); 
-        }};
+        mc.onclick=()=>{ if(confirm(t('alert_delete_record')+" "+l)){ if(budsSettings[l]) { delete budsSettings[l]; localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings)); } labels=labels.filter(x=>x!==l); selectedLabels.delete(l); saveData(); renderLabels(); hydrateSettingsUI(); }};
         man.appendChild(mc);
     });
 }
-function addLabel(){
-    const v = document.getElementById('newLabelInput').value.trim();
-    if(v && !labels.includes(v)){ labels.push(v); saveData(); renderLabels(); document.getElementById('newLabelInput').value=''; hydrateSettingsUI(); }
-}
-
-/* ---------------- Edit Modal ---------------- */
+function addLabel(){ const v = document.getElementById('newLabelInput').value.trim(); if(v && !labels.includes(v)){ labels.push(v); saveData(); renderLabels(); document.getElementById('newLabelInput').value=''; hydrateSettingsUI(); } }
 function openEditModal(id=null){
-    const modal = document.getElementById('editModal');
-    document.getElementById('segmentsContainer').innerHTML='';
+    const modal = document.getElementById('editModal'); document.getElementById('segmentsContainer').innerHTML='';
     if(id){
-        const l = logs.find(x=>x.id===id);
-        if(!l) return;
-        document.getElementById('editId').value=l.id;
-        document.getElementById('editTitle').value=l.title;
-        document.getElementById('editLabels').value=(l.labels||[]).join(',');
-        document.getElementById('btnDeleteLog').style.display='block';
+        const l = logs.find(x=>x.id===id); if(!l) return;
+        document.getElementById('editId').value=l.id; document.getElementById('editTitle').value=l.title; document.getElementById('editLabels').value=(l.labels||[]).join(','); document.getElementById('btnDeleteLog').style.display='block';
         (l.segments||[{startMs:l.startMs, endMs:l.endMs}]).forEach(s=>addSegmentRow(s.startMs, s.endMs));
     } else {
-        document.getElementById('editId').value='';
-        document.getElementById('editTitle').value='';
-        document.getElementById('editLabels').value='';
-        document.getElementById('btnDeleteLog').style.display='none';
+        document.getElementById('editId').value=''; document.getElementById('editTitle').value=''; document.getElementById('editLabels').value=''; document.getElementById('btnDeleteLog').style.display='none';
         const now=Date.now(); addSegmentRow(now-3600000, now);
     }
     modal.style.display='flex';
@@ -1451,77 +1383,42 @@ function addSegmentRow(s=null, e=null){
     i1.type='datetime-local'; i1.className='seg-start'; if(s) i1.value = new Date(s - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
     i2.type='datetime-local'; i2.className='seg-end'; if(e) i2.value = new Date(e - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
     b.innerText='X'; b.className='btn-danger btn-sm'; b.onclick=()=>div.remove();
-    div.append(i1,i2,b);
-    document.getElementById('segmentsContainer').appendChild(div);
+    div.append(i1,i2,b); document.getElementById('segmentsContainer').appendChild(div);
 }
 function saveEdit(){
-    const id = document.getElementById('editId').value;
-    const title = document.getElementById('editTitle').value;
-    const lbs = document.getElementById('editLabels').value.split(',').map(s=>s.trim()).filter(Boolean);
-    const rows = document.querySelectorAll('.segment-row');
-    const segs = [];
-    rows.forEach(r=>{
-        const s = r.querySelector('.seg-start').value, e = r.querySelector('.seg-end').value;
-        if(s && e) segs.push({startMs: new Date(s).getTime(), endMs: new Date(e).getTime()});
-    });
+    const id = document.getElementById('editId').value; const title = document.getElementById('editTitle').value; const lbs = document.getElementById('editLabels').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const rows = document.querySelectorAll('.segment-row'); const segs = [];
+    rows.forEach(r=>{ const s = r.querySelector('.seg-start').value, e = r.querySelector('.seg-end').value; if(s && e) segs.push({startMs: new Date(s).getTime(), endMs: new Date(e).getTime()}); });
     if(!segs.length) return alert('Need segments');
-    segs.sort((a,b)=>a.startMs-b.startMs);
-    const total = segs.reduce((acc,cur)=>acc+(cur.endMs-cur.startMs),0);
-    const obj = {
-        id: id?Number(id):Date.now(), title, labels: lbs,
-        startMs: segs[0].startMs, endMs: Math.max(...segs.map(s=>s.endMs)), activeMs: total, segments: segs, createdAt: Date.now()
-    };
+    segs.sort((a,b)=>a.startMs-b.startMs); const total = segs.reduce((acc,cur)=>acc+(cur.endMs-cur.startMs),0);
+    const obj = { id: id?Number(id):Date.now(), title, labels: lbs, startMs: segs[0].startMs, endMs: Math.max(...segs.map(s=>s.endMs)), activeMs: total, segments: segs, createdAt: Date.now() };
     if(id) logs[logs.findIndex(x=>x.id==id)] = obj; else logs.unshift(obj);
     saveData(); renderRecentLogsTimer(); renderRecordsPage();
-    if(document.getElementById('page-calendar').classList.contains('active')) renderCalendar();
-    if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage();
+    if(document.getElementById('page-calendar').classList.contains('active')) renderCalendar(); if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage();
     closeModal('editModal');
 }
 function deleteLog(){
     const id = document.getElementById('editId').value;
-    if(confirm(t('alert_delete_record'))){
-        logs = logs.filter(l=>l.id != id); saveData(); renderRecentLogsTimer(); renderRecordsPage(); renderCalendar();
-        if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage();
-        closeModal('editModal'); closeModal('dayModal');
-    }
+    if(confirm(t('alert_delete_record'))){ logs = logs.filter(l=>l.id != id); saveData(); renderRecentLogsTimer(); renderRecordsPage(); renderCalendar(); if(document.getElementById('page-stats').classList.contains('active')) renderStatsPage(); closeModal('editModal'); closeModal('dayModal'); }
 }
-
-/* ---------------- Navigation ---------------- */
 function showPage(id){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('page-'+id).classList.add('active');
-    const idx = ['timer','tasks','records','calendar','stats','settings'].indexOf(id);
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active'); const idx = ['timer','tasks','records','calendar','stats','settings'].indexOf(id);
     if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
-    
-    if(id==='calendar') renderCalendar();
-    if(id==='records') renderRecordsPage();
-    if(id==='settings') hydrateSettingsUI();
-    if(id==='stats') renderStatsPage(); 
-    if(id==='tasks') renderTasksPage();
+    if(id==='calendar') renderCalendar(); if(id==='records') renderRecordsPage(); if(id==='settings') hydrateSettingsUI(); if(id==='stats') renderStatsPage(); if(id==='tasks') renderTasksPage();
 }
-
-/* ---------------- Data Mgmt ---------------- */
 function exportData(){
-    const b = new Blob([JSON.stringify({logs,labels,budsSettings,statsSettings,tasks,dailyNotes})],{type:'application/json'});
+    const b = new Blob([JSON.stringify({logs,labels,budsSettings,statsSettings,tasks,containers,dailyNotes})],{type:'application/json'});
     const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download='backup.json'; a.click();
 }
 function importData(inp){
-    const f = inp.files[0]; if(!f) return;
-    const r = new FileReader();
+    const f = inp.files[0]; if(!f) return; const r = new FileReader();
     r.onload=e=>{
         const d = JSON.parse(e.target.result);
-        if(d.logs) logs=d.logs; if(d.labels) labels=d.labels;
-        if(d.budsSettings) budsSettings=d.budsSettings;
-        if(d.statsSettings) statsSettings=d.statsSettings;
-        if(d.tasks) tasks=d.tasks;
-        if(d.dailyNotes) dailyNotes=d.dailyNotes;
-        saveData(); localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings));
-        saveTasks();
-        localStorage.setItem('dailyNotes_v1', JSON.stringify(dailyNotes));
-        location.reload();
-    };
-    r.readAsText(f);
+        if(d.logs) logs=d.logs; if(d.labels) labels=d.labels; if(d.budsSettings) budsSettings=d.budsSettings; if(d.statsSettings) statsSettings=d.statsSettings;
+        if(d.tasks) tasks=d.tasks; if(d.containers) containers=d.containers; if(d.dailyNotes) dailyNotes=d.dailyNotes;
+        saveData(); localStorage.setItem(BUDS_KEY, JSON.stringify(budsSettings)); saveTasks(); saveContainers(); localStorage.setItem('dailyNotes_v1', JSON.stringify(dailyNotes)); location.reload();
+    }; r.readAsText(f);
 }
 function resetAllData(){ if(confirm(t('alert_reset'))){ localStorage.clear(); location.reload(); } }
 </script>
