@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Time Manager (Stats Fixed + Tasks Board)</title>
+<title>Pro Time Manager (Tasks Hierarchy & Views)</title>
 <style>
     :root {
         --primary: #2563eb;
@@ -105,121 +105,122 @@
     .time-input-group input { width: 60px; text-align: center; }
 
     /* ==========================================================
-       TASKS BOARD SPECIFIC STYLES (NEW)
+       TASKS BOARD SPECIFIC STYLES
        ========================================================== */
-    .task-board-wrapper {
-        display: flex;
-        overflow-x: auto;
-        gap: 20px;
-        padding-bottom: 15px;
-        align-items: flex-start;
-        min-height: 350px;
-    }
+    .view-toggles { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+    .view-toggles button { font-weight: 500; }
+    .view-toggles button.active { background: var(--primary); color: white; border-color: var(--primary); }
+       
+    .task-board-wrapper { display: flex; gap: 20px; padding-bottom: 15px; min-height: 350px; width: 100%; }
     
-    .kanban-col {
-        min-width: 300px;
-        max-width: 300px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
+    /* Kanban View */
+    .task-board-wrapper.view-kanban { overflow-x: auto; align-items: flex-start; }
+    .kanban-col { min-width: 300px; max-width: 300px; display: flex; flex-direction: column; gap: 15px; }
 
-    /* Container Boxes */
+    /* Tree View */
+    .task-board-wrapper.view-tree { flex-direction: column; gap: 10px; }
+    .tree-node-wrap { margin-left: 25px; border-left: 2px solid #e9ecef; padding-left: 15px; position: relative; }
+    .tree-node-wrap::before { content: ""; position: absolute; left: -2px; top: 20px; width: 15px; height: 2px; background: #e9ecef; }
+    
+    /* Nested View */
+    .task-board-wrapper.view-nested { flex-direction: column; gap: 15px; }
+    .nested-container { padding: 15px; background: rgba(0,0,0,0.015); margin-top: 10px; }
+    .nested-children { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+
+    /* Mind Map View */
+    .task-board-wrapper.view-mindmap { display: block; border-radius: 10px; overflow: hidden; }
+    .mindmap-node { box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.95); }
+
+    /* Container Boxes Generic */
     .container-box {
-        border-radius: 10px;
-        background: #fdfdfd;
-        border: 1px solid rgba(0,0,0,0.1);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        transition: 0.2s;
+        border-radius: 10px; background: #fdfdfd; border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; overflow: hidden; transition: 0.2s;
     }
     .container-header {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        gap: 8px;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex; align-items: center; padding: 8px 12px; gap: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);
     }
-    .container-color-picker {
-        width: 24px;
-        height: 24px;
-        padding: 0;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        overflow: hidden;
-    }
+    .container-color-picker { width: 20px; height: 20px; padding: 0; border: none; border-radius: 50%; cursor: pointer; overflow: hidden; }
     .container-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
     .container-color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
     
-    .container-title {
-        flex: 1;
-        font-weight: 600;
-        font-size: 1.05rem;
-        outline: none;
-        border-radius: 4px;
-        padding: 2px 4px;
-        transition: 0.2s;
-    }
+    .container-title { flex: 1; font-weight: 600; font-size: 1rem; outline: none; border-radius: 4px; padding: 2px 4px; transition: 0.2s; }
     .container-title:focus { background: rgba(255,255,255,0.7); box-shadow: 0 0 0 2px var(--primary); }
     
-    .container-actions button { background: none; border: none; color: #888; padding: 4px; cursor: pointer; font-size: 1rem; }
-    .container-actions button:hover { color: var(--bud-apical); }
+    .container-actions { display: flex; gap: 2px; }
+    .container-actions button { background: none; border: none; color: #888; padding: 4px; cursor: pointer; font-size: 1rem; border-radius: 4px; }
+    .container-actions button:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+    .container-actions button.del-btn:hover { color: var(--bud-apical); }
 
     /* Dropzones & Task Cards */
-    .task-dropzone {
-        min-height: 60px;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        transition: background 0.2s;
-    }
-    .task-dropzone.drag-over { background: rgba(0,0,0,0.03); }
+    .task-dropzone { min-height: 40px; padding: 8px; display: flex; flex-direction: column; gap: 6px; transition: background 0.2s; }
+    .task-dropzone.drag-over { background: rgba(0,0,0,0.05); border-radius: 6px; }
 
     .task-card {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 12px;
-        cursor: grab;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        transition: transform 0.1s, box-shadow 0.1s;
+        background: white; border: 1px solid var(--border); border-radius: 6px; padding: 10px; cursor: grab;
+        display: flex; align-items: flex-start; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: 0.1s;
     }
     .task-card:active { cursor: grabbing; }
     .task-card.dragging { opacity: 0.5; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transform: scale(1.02); }
     
-    .task-card .task-checkbox { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary); }
+    .task-card .task-checkbox { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary); }
     .task-card .task-info-block { flex: 1; min-width: 0; }
-    .task-card .task-title-text { font-weight: 500; font-size: 0.95rem; word-break: break-word; }
+    .task-card .task-title-text { font-weight: 500; font-size: 0.9rem; word-break: break-word; line-height: 1.3; }
     .task-card .task-meta-text { font-size: 0.75rem; color: #888; margin-top: 4px; }
     
-    /* Bottom Unassigned Area */
-    .unassigned-area {
-        background: #f8f9fa;
-        border: 2px dashed #ced4da;
+    /* ==========================================================
+       COMPLETED TASKS - HORIZONTAL DAY ROWS
+       ========================================================== */
+    .completed-day-group {
+        margin-bottom: 15px;
+        background: #fdfdfd;
+        border: 1px solid var(--border);
         border-radius: 10px;
-        margin-top: 20px;
-        padding: 15px;
+        padding: 10px 15px;
     }
-
-    .add-layer-btn {
-        min-width: 200px;
-        border: 2px dashed var(--border);
-        background: transparent;
-        color: var(--sub-text);
-        font-weight: bold;
+    .completed-day-header {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .completed-scroll-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 8px; /* Room for scrollbar */
     }
+    /* Stylish Scrollbar for horizontal row */
+    .completed-scroll-row::-webkit-scrollbar { height: 6px; }
+    .completed-scroll-row::-webkit-scrollbar-thumb { background-color: #ced4da; border-radius: 10px; }
+    .completed-scroll-row::-webkit-scrollbar-track { background: transparent; }
+
+    .completed-task-card {
+        min-width: 220px;
+        max-width: 260px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        transition: 0.1s;
+    }
+    .completed-task-card:hover { background: #f1f3f5; border-color: #ced4da; }
+    .completed-task-card .task-checkbox { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: #adb5bd; }
+    .completed-task-card .task-info-block { flex: 1; min-width: 0; text-align: left; cursor: pointer; }
+    .completed-task-card .task-title-text { color: #868e96; text-decoration: line-through; font-weight: 500; font-size: 0.9rem; word-break: break-word; line-height: 1.3; }
+    .completed-task-card .label-chip-sm { background: #fff; color: #adb5bd; border: 1px solid #e9ecef; opacity: 0.9; margin-top: 6px; }
+
+    /* Unassigned Area & Extras */
+    .unassigned-area { background: #f8f9fa; border: 2px dashed #ced4da; border-radius: 10px; margin-top: 20px; padding: 15px; }
+    .add-layer-btn { min-width: 200px; border: 2px dashed var(--border); background: transparent; color: var(--sub-text); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 15px; border-radius: 8px; }
     .add-layer-btn:hover { background: rgba(0,0,0,0.02); color: var(--text); border-color: #adb5bd; }
+
+    .hierarchy-badge { font-size: 0.7rem; color: #666; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 12px; display: block; margin-bottom: 5px; width: fit-content; }
 
     /* Layouts / Notes */
     .calendar-container { flex-wrap: wrap; gap: 10px; }
@@ -259,16 +260,23 @@
         <ul class="log-list" id="recentListTimer"></ul>
     </div>
 
-    <!-- TASKS TAB REWRITTEN -->
+    <!-- TASKS TAB -->
     <div id="page-tasks" class="page">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <h3 data-i18n="header_tasks" style="margin:0;">Task Board</h3>
             <button class="btn-primary" onclick="openTaskModal()">+ Add Task</button>
         </div>
         
-        <!-- Multi-Layer Kanban Board -->
-        <div class="task-board-wrapper" id="taskBoardContainer">
-            <!-- Columns injected by JS -->
+        <div class="view-toggles" id="taskViewToggles">
+            <button class="btn-outline active" onclick="setTaskView('kanban')" data-i18n="btn_view_kanban">Kanban (Columns)</button>
+            <button class="btn-outline" onclick="setTaskView('tree')" data-i18n="btn_view_tree">Tree View</button>
+            <button class="btn-outline" onclick="setTaskView('nested')" data-i18n="btn_view_nested">Nested Cards</button>
+            <button class="btn-outline" onclick="setTaskView('mindmap')" data-i18n="btn_view_mindmap">Mind Map</button>
+        </div>
+        
+        <!-- Multi-View Task Board Container -->
+        <div class="task-board-wrapper view-kanban" id="taskBoardContainer">
+            <!-- Dynamic Injection -->
         </div>
 
         <!-- Unassigned Area -->
@@ -280,8 +288,12 @@
         </div>
 
         <hr style="margin: 25px 0 15px 0; border: 0; border-top: 1px solid var(--border);">
-        <h4 data-i18n="header_completed_tasks" style="color: var(--sub-text);">Completed Tasks</h4>
-        <div id="completedTasksList" class="log-list" style="opacity: 0.7;"></div>
+        <details>
+            <summary style="font-weight: bold; cursor: pointer; color: var(--sub-text); outline: none; padding: 5px 0;" data-i18n="header_completed_tasks">Completed Tasks (Toggle)</summary>
+            
+            <!-- Horizontal Days Container -->
+            <div id="completedTasksList" style="margin-top: 15px;"></div>
+        </details>
     </div>
 
     <div id="page-records" class="page">
@@ -576,11 +588,12 @@ const translations = {
     label_title: "제목", label_segments: "구간", label_tags: "라벨", btn_add_segment: "+ 구간 추가",
     btn_delete: "삭제", btn_cancel: "취소", msg_no_data: "데이터 없음", msg_total_focus: "총 집중 시간",
     alert_delete_record: "삭제하시겠습니까?", alert_reset: "정말 초기화 하시겠습니까?", header_day_stats: "일간 통계",
-    header_tasks: "태스크 보드", header_completed_tasks: "완료된 항목", btn_add_task: "+ 할 일 추가",
+    header_tasks: "태스크 보드", header_completed_tasks: "완료된 항목 (토글)", btn_add_task: "+ 할 일 추가",
     header_add_edit_task: "할 일 추가/수정", label_deadline_type: "기한 설정", label_target_date: "목표 날짜 (반복 시작일)",
     opt_none: "기한 없음", opt_stats: "통계 기간에 맞춤", opt_custom: "특정 날짜", 
     opt_weekly: "매주 반복", opt_biweekly: "격주 반복", opt_monthly: "매월 반복", opt_yearly: "매년 반복",
-    label_repeat_until: "반복 종료일 (선택사항)", header_daily_logs: "기록", header_daily_notes: "메모", ph_notes: "여기에 메모를 작성하세요..."
+    label_repeat_until: "반복 종료일 (선택사항)", header_daily_logs: "기록", header_daily_notes: "메모", ph_notes: "여기에 메모를 작성하세요...",
+    btn_view_kanban: "칸반 (컬럼)", btn_view_tree: "트리 뷰", btn_view_nested: "중첩 카드", btn_view_mindmap: "마인드맵"
   },
   en: {
     tab_timer: "Timer", tab_tasks: "Tasks", tab_records: "Records", tab_calendar: "Calendar", tab_stats: "Stats", tab_settings: "Settings",
@@ -603,11 +616,12 @@ const translations = {
     label_title: "Title", label_segments: "Segments", label_tags: "Labels", btn_add_segment: "+ Segment",
     btn_delete: "Delete", btn_cancel: "Cancel", msg_no_data: "No Data", msg_total_focus: "Total Focus",
     alert_delete_record: "Delete record?", alert_reset: "Reset all data?", header_day_stats: "Daily Stats",
-    header_tasks: "Task Board", header_completed_tasks: "Completed Tasks", btn_add_task: "+ Add Task",
+    header_tasks: "Task Board", header_completed_tasks: "Completed Tasks (Toggle)", btn_add_task: "+ Add Task",
     header_add_edit_task: "Add/Edit Task", label_deadline_type: "Deadline Type", label_target_date: "Target Date (Start Date for Repeats)",
     opt_none: "No Deadline", opt_stats: "Match Stats Period", opt_custom: "Specific Date", 
     opt_weekly: "Repeat Weekly", opt_biweekly: "Repeat Biweekly", opt_monthly: "Repeat Monthly", opt_yearly: "Repeat Yearly",
-    label_repeat_until: "Repeat Until (End Date - Optional)", header_daily_logs: "Logs", header_daily_notes: "Notes", ph_notes: "Type notes here..."
+    label_repeat_until: "Repeat Until (End Date - Optional)", header_daily_logs: "Logs", header_daily_notes: "Notes", ph_notes: "Type notes here...",
+    btn_view_kanban: "Kanban (Columns)", btn_view_tree: "Tree View", btn_view_nested: "Nested Cards", btn_view_mindmap: "Mind Map"
   },
   es: {
     tab_timer: "Temporizador", tab_tasks: "Tareas", tab_records: "Registros", tab_calendar: "Calendario", tab_stats: "Estadísticas", tab_settings: "Ajustes",
@@ -630,11 +644,12 @@ const translations = {
     label_title: "Título", label_segments: "Segmentos", label_tags: "Etiquetas", btn_add_segment: "+ Segmento",
     btn_delete: "Eliminar", btn_cancel: "Cancelar", msg_no_data: "Sin Datos", msg_total_focus: "Tiempo Total",
     alert_delete_record: "¿Eliminar?", alert_reset: "¿Reiniciar todo?", header_day_stats: "Estadísticas Diarias",
-    header_tasks: "Tablero de Tareas", header_completed_tasks: "Tareas Completadas", btn_add_task: "+ Añadir Tarea",
+    header_tasks: "Tablero de Tareas", header_completed_tasks: "Tareas Completadas (Alternar)", btn_add_task: "+ Añadir Tarea",
     header_add_edit_task: "Añadir/Editar Tarea", label_deadline_type: "Tipo de Fecha Límite", label_target_date: "Fecha Objetivo",
     opt_none: "Sin Límite", opt_stats: "Coincidir Periodo", opt_custom: "Fecha Específica", 
     opt_weekly: "Repetir Semanal", opt_biweekly: "Repetir Quincenal", opt_monthly: "Repetir Mensual", opt_yearly: "Repetir Anual",
-    label_repeat_until: "Repetir Hasta (Opcional)", header_daily_logs: "Registros", header_daily_notes: "Notas", ph_notes: "Escribe tus notas aquí..."
+    label_repeat_until: "Repetir Hasta (Opcional)", header_daily_logs: "Registros", header_daily_notes: "Notas", ph_notes: "Escribe tus notas aquí...",
+    btn_view_kanban: "Kanban (Columnas)", btn_view_tree: "Vista Árbol", btn_view_nested: "Tarjetas Anidadas", btn_view_mindmap: "Mapa Mental"
   }
 };
 
@@ -644,9 +659,10 @@ function t(key){ return (translations[currentLang] && translations[currentLang][
 /* ---------------- State & Settings ---------------- */
 let logs = JSON.parse(localStorage.getItem('logs')) || [];
 let tasks = JSON.parse(localStorage.getItem('tasks_v2')) || [];
-let containers = JSON.parse(localStorage.getItem('task_containers_v1')) || [
-    { id: 1, title: "Main Goals", color: "#e7f5ff", columnIndex: 0, orderInColumn: 0 }
+let containers = JSON.parse(localStorage.getItem('task_containers_v2')) || [
+    { id: 1, title: "Main Goals", color: "#e7f5ff", columnIndex: 0, parentId: null, orderInColumn: 0 }
 ];
+let currentTaskView = localStorage.getItem('task_view_mode') || 'kanban';
 let dailyNotes = JSON.parse(localStorage.getItem('dailyNotes_v1')) || {};
 let labels = JSON.parse(localStorage.getItem('labels')) || ['Study','Work','Exercise'];
 let selectedLabels = new Set();
@@ -656,13 +672,14 @@ let currentDate = new Date();
 let recordsCurrentLimit = 10;
 let clickTimer = null; 
 
-let draggedTaskElement = null; // Used for Drag & Drop State
+let draggedTaskElement = null;
 
 const STATS_KEY = "statsSettings_v2";
 let statsSettings = JSON.parse(localStorage.getItem(STATS_KEY)) || { mode: "weekly", daysN: 7, daysStartDate: null, weekStartDow: 1 };
 const BUDS_KEY = "budsSettings_v3";
 let budsSettings = JSON.parse(localStorage.getItem(BUDS_KEY)) || {};
 let currentStatsChunks = [];
+let nodesWithPos = {}; // For Mind Map
 
 /* ---------------- Initialization ---------------- */
 document.getElementById('langSelect').value = currentLang;
@@ -673,21 +690,39 @@ updateButtons();
 hydrateSettingsUI();
 currentStatsChunks = generateStatsChunks(); 
 
-// Migrate legacy tasks to V2 (with container support)
-function migrateTasks() {
+function migrateTasksAndContainers() {
+    // Tasks migration
     let legacyTasks = JSON.parse(localStorage.getItem('tasks_v1'));
     if (legacyTasks && !localStorage.getItem('tasks_v2')) {
         tasks = legacyTasks.map((t, idx) => ({ ...t, containerId: null, order: idx }));
         saveTasks();
     } else {
-        // Ensure new fields exist for resilience
         tasks.forEach((t, i) => { 
             if (t.containerId === undefined) t.containerId = null; 
             if (t.order === undefined) t.order = i; 
         });
     }
+
+    // Containers migration
+    let legacyContainers = JSON.parse(localStorage.getItem('task_containers_v1'));
+    if (legacyContainers && !localStorage.getItem('task_containers_v2')) {
+        let layerMap = {};
+        containers = legacyContainers.map(c => {
+            let newC = { ...c, parentId: null };
+            if(!layerMap[newC.columnIndex]) layerMap[newC.columnIndex] = [];
+            layerMap[newC.columnIndex].push(newC);
+            return newC;
+        });
+        containers.forEach(c => {
+            if (c.columnIndex > 0 && c.parentId === null) {
+                let potential = layerMap[c.columnIndex - 1];
+                if(potential && potential.length > 0) c.parentId = potential[0].id;
+            }
+        });
+        saveContainers();
+    }
 }
-migrateTasks();
+migrateTasksAndContainers();
 
 /* ---------------- Core Functions ---------------- */
 function updateAllTexts(){
@@ -715,7 +750,7 @@ function saveData(){
   localStorage.setItem('labels', JSON.stringify(labels));
 }
 function saveTasks() { localStorage.setItem('tasks_v2', JSON.stringify(tasks)); }
-function saveContainers() { localStorage.setItem('task_containers_v1', JSON.stringify(containers)); }
+function saveContainers() { localStorage.setItem('task_containers_v2', JSON.stringify(containers)); }
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatHMS(ms){
   const sec = Math.floor(ms/1000); const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60);
@@ -775,14 +810,16 @@ function updateButtons(){
   document.getElementById('btnLap').disabled = !hasData; document.getElementById('btnStop').disabled = !hasData;
 }
 
-/* ---------------- Tasks Kanban Logic ---------------- */
-function getStatsEndDateStr() {
-    if(!currentStatsChunks || currentStatsChunks.length === 0) currentStatsChunks = generateStatsChunks();
-    if(currentStatsChunks.length > 0) {
-        const date = new Date(currentStatsChunks[0].end);
-        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-    }
-    return "";
+/* ---------------- Tasks Multi-View Logic ---------------- */
+function setTaskView(viewMode) {
+    currentTaskView = viewMode;
+    localStorage.setItem('task_view_mode', viewMode);
+    
+    // Update button states
+    document.querySelectorAll('#taskViewToggles button').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    renderTasksPage();
 }
 
 function renderTasksPage() {
@@ -791,93 +828,76 @@ function renderTasksPage() {
     const compList = document.getElementById('completedTasksList');
     
     board.innerHTML = ''; unassignedZone.innerHTML = ''; compList.innerHTML = '';
+    
+    // Reset view class
+    board.className = `task-board-wrapper view-${currentTaskView}`;
 
     const activeTasks = tasks.filter(t => !t.completed);
     const completedTasks = tasks.filter(t => t.completed).sort((a,b) => b.createdAt - a.createdAt);
 
-    // Group containers by columns
-    const colsMap = {};
-    containers.forEach(c => {
-        if (!colsMap[c.columnIndex]) colsMap[c.columnIndex] = [];
-        colsMap[c.columnIndex].push(c);
-    });
-    const maxCol = Math.max(0, ...Object.keys(colsMap).map(Number));
-
-    // Render Columns & Containers
-    for (let i = 0; i <= maxCol; i++) {
-        const colDiv = document.createElement('div');
-        colDiv.className = 'kanban-col';
-        
-        const colContainers = colsMap[i] || [];
-        colContainers.sort((a,b) => a.orderInColumn - b.orderInColumn);
-
-        colContainers.forEach(cont => {
-            const box = document.createElement('div');
-            box.className = 'container-box';
-            
-            // Header
-            const header = document.createElement('div');
-            header.className = 'container-header';
-            header.style.backgroundColor = cont.color || '#e7f5ff';
-            
-            header.innerHTML = `
-                <input type="color" class="container-color-picker" title="Change Color" value="${cont.color}" onchange="updateContainerColor(${cont.id}, this.value)">
-                <div class="container-title" contenteditable="true" onblur="renameContainer(${cont.id}, this.innerText)">${cont.title}</div>
-                <div class="container-actions"><button onclick="deleteContainer(${cont.id})" title="Delete Container">🗑</button></div>
-            `;
-
-            // Dropzone
-            const dropzone = document.createElement('div');
-            dropzone.className = 'task-dropzone';
-            dropzone.dataset.containerId = cont.id;
-            setupDropzoneEvents(dropzone);
-
-            // Populate Tasks in this container
-            const contTasks = activeTasks.filter(t => t.containerId === cont.id).sort((a,b) => a.order - b.order);
-            contTasks.forEach(t => dropzone.appendChild(createTaskCard(t)));
-
-            box.appendChild(header);
-            box.appendChild(dropzone);
-            colDiv.appendChild(box);
-        });
-
-        // Add container button at bottom of col
-        const btn = document.createElement('button');
-        btn.innerText = "+ Add Container Here";
-        btn.className = "btn-outline btn-sm";
-        btn.onclick = () => createNewContainer(i);
-        colDiv.appendChild(btn);
-
-        board.appendChild(colDiv);
-    }
-
-    // "Add new layer" right-most button
-    const addLayerBtn = document.createElement('button');
-    addLayerBtn.className = 'add-layer-btn';
-    addLayerBtn.innerText = "+ Add New Layer";
-    addLayerBtn.onclick = () => createNewContainer(maxCol + 1);
-    board.appendChild(addLayerBtn);
+    // Call specific renderer based on view mode
+    if (currentTaskView === 'kanban') renderKanbanView(board, activeTasks);
+    else if (currentTaskView === 'tree') renderTreeView(board, activeTasks);
+    else if (currentTaskView === 'nested') renderNestedView(board, activeTasks);
+    else if (currentTaskView === 'mindmap') renderMindMapView(board, activeTasks);
 
     // Populate Unassigned Tasks
     setupDropzoneEvents(unassignedZone);
     const unassignedTasks = activeTasks.filter(t => t.containerId == null).sort((a,b) => a.order - b.order);
     unassignedTasks.forEach(t => unassignedZone.appendChild(createTaskCard(t)));
 
-    // Populate Completed Tasks
+    // Populate Completed Tasks (Grouped by Day)
+    const groupedCompleted = {};
     completedTasks.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'log-item task-completed';
-        div.style.justifyContent = 'flex-start'; div.style.padding = '8px 0';
-
-        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'task-checkbox'; cb.checked = true;
-        cb.onchange = () => toggleTaskComplete(t.id);
-
-        const info = document.createElement('div'); info.className = 'task-info-block'; info.onclick = () => openTaskModal(t.id);
-        const taskBadges = (t.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
-        info.innerHTML = `<div class="task-title-text" style="color:#adb5bd; text-decoration:line-through;">${t.title} ${taskBadges}</div>`;
+        const d = new Date(t.createdAt);
+        const langConfig = currentLang === 'ko' ? 'ko-KR' : (currentLang === 'es' ? 'es-ES' : 'en-US');
+        // Produce a localized, readable date grouping string (e.g. Mar 14, 2026)
+        const dateStr = d.toLocaleDateString(langConfig, { year: 'numeric', month: 'short', day: 'numeric' });
         
-        div.appendChild(cb); div.appendChild(info);
-        compList.appendChild(div);
+        // Use a strict ISO date as the sort key (YYYY-MM-DD)
+        const sortKey = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; 
+        
+        if(!groupedCompleted[sortKey]) groupedCompleted[sortKey] = { label: dateStr, tasks: [] };
+        groupedCompleted[sortKey].tasks.push(t);
+    });
+
+    Object.keys(groupedCompleted).sort((a,b) => b.localeCompare(a)).forEach(sortKey => {
+        const groupData = groupedCompleted[sortKey];
+        
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'completed-day-group';
+        
+        const header = document.createElement('div');
+        header.className = 'completed-day-header';
+        header.innerText = groupData.label;
+        
+        const scrollRow = document.createElement('div');
+        scrollRow.className = 'completed-scroll-row';
+
+        groupData.tasks.forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'completed-task-card';
+
+            const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'task-checkbox'; cb.checked = true;
+            cb.onchange = () => toggleTaskComplete(t.id);
+
+            const info = document.createElement('div');
+            info.className = 'task-info-block'; 
+            info.onclick = () => openTaskModal(t.id);
+            
+            const taskBadges = (t.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
+            info.innerHTML = `
+                <div class="task-title-text" title="${t.title}">${t.title}</div>
+                ${taskBadges ? `<div>${taskBadges}</div>` : ''}
+            `;
+            
+            card.appendChild(cb); card.appendChild(info);
+            scrollRow.appendChild(card);
+        });
+
+        groupDiv.appendChild(header);
+        groupDiv.appendChild(scrollRow);
+        compList.appendChild(groupDiv);
     });
 
     // Populate Container Select in Modal
@@ -888,14 +908,241 @@ function renderTasksPage() {
     select.value = existingVal || "null";
 }
 
+/* --- Renderer: Kanban --- */
+function renderKanbanView(board, activeTasks) {
+    const colsMap = {};
+    containers.forEach(c => {
+        if (!colsMap[c.columnIndex]) colsMap[c.columnIndex] = [];
+        colsMap[c.columnIndex].push(c);
+    });
+    const maxCol = Math.max(0, ...Object.keys(colsMap).map(Number));
+
+    for (let i = 0; i <= maxCol; i++) {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'kanban-col';
+        
+        const colContainers = colsMap[i] || [];
+        colContainers.sort((a,b) => a.orderInColumn - b.orderInColumn);
+
+        colContainers.forEach(cont => {
+            colDiv.appendChild(buildContainerBox(cont, activeTasks));
+        });
+
+        // Add container button at bottom of col
+        const btn = document.createElement('button');
+        btn.innerText = "+ Add Group Here";
+        btn.className = "btn-outline btn-sm";
+        btn.onclick = () => createNewContainer(i, null);
+        colDiv.appendChild(btn);
+
+        board.appendChild(colDiv);
+    }
+
+    const addLayerBtn = document.createElement('button');
+    addLayerBtn.className = 'add-layer-btn';
+    addLayerBtn.innerText = "+ Add New Layer";
+    addLayerBtn.onclick = () => createNewContainer(maxCol + 1, null);
+    board.appendChild(addLayerBtn);
+}
+
+/* --- Renderer: Tree --- */
+function renderTreeView(board, activeTasks) {
+    const roots = containers.filter(c => !c.parentId);
+    if(roots.length === 0) {
+        board.innerHTML = "<div style='color:#888; padding:20px;'>No structured containers. Create a group below.</div>";
+    }
+    roots.forEach(r => board.appendChild(buildTreeNode(r.id, activeTasks)));
+    
+    const btn = document.createElement('button');
+    btn.innerText = "+ Add Root Node"; btn.className = "btn-outline"; btn.style.maxWidth = "200px"; btn.style.marginTop="10px";
+    btn.onclick = () => createNewContainer(0, null);
+    board.appendChild(btn);
+}
+function buildTreeNode(cId, activeTasks) {
+    const cont = containers.find(c => c.id === cId);
+    if(!cont) return document.createElement('div');
+    
+    const wrap = document.createElement('div');
+    wrap.className = 'tree-node-wrap';
+    wrap.appendChild(buildContainerBox(cont, activeTasks));
+    
+    const childrenContainer = document.createElement('div');
+    containers.filter(c => c.parentId === cont.id).forEach(child => {
+        childrenContainer.appendChild(buildTreeNode(child.id, activeTasks));
+    });
+    wrap.appendChild(childrenContainer);
+    return wrap;
+}
+
+/* --- Renderer: Nested --- */
+function renderNestedView(board, activeTasks) {
+    const roots = containers.filter(c => !c.parentId);
+    if(roots.length === 0) board.innerHTML = "<div style='color:#888; padding:20px;'>No structured containers. Create a group below.</div>";
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.width = "100%";
+    roots.forEach(r => wrapper.appendChild(buildNestedNode(r.id, activeTasks)));
+    
+    const btn = document.createElement('button');
+    btn.innerText = "+ Add Root Container"; btn.className = "btn-outline"; btn.style.marginTop="20px";
+    btn.onclick = () => createNewContainer(0, null);
+    wrapper.appendChild(btn);
+    board.appendChild(wrapper);
+}
+function buildNestedNode(cId, activeTasks) {
+    const cont = containers.find(c => c.id === cId);
+    if(!cont) return document.createElement('div');
+
+    const box = buildContainerBox(cont, activeTasks);
+    box.classList.add('nested-container');
+    
+    const childrenContainer = document.createElement('div');
+    childrenContainer.className = 'nested-children';
+    
+    containers.filter(c => c.parentId === cont.id).forEach(child => {
+        childrenContainer.appendChild(buildNestedNode(child.id, activeTasks));
+    });
+    
+    if(childrenContainer.children.length > 0) box.appendChild(childrenContainer);
+    return box;
+}
+
+/* --- Renderer: Mind Map --- */
+function renderMindMapView(board, activeTasks) {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = "width:100%; height:600px; overflow:auto; position:relative; background:#f0f2f5; border:1px solid #dee2e6; border-radius:10px;";
+    wrapper.id = 'mindmap-wrapper';
+    
+    const canvas = document.createElement('div');
+    canvas.style.cssText = "width:3000px; height:3000px; position:relative;";
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;";
+    canvas.appendChild(svg);
+    
+    // Math to position nodes
+    nodesWithPos = {};
+    calculateMindMap(1500, 1500);
+    
+    containers.forEach(c => {
+        if(!nodesWithPos[c.id]) return;
+        const pos = nodesWithPos[c.id];
+        
+        // Draw lines
+        if(c.parentId && nodesWithPos[c.parentId]) {
+            const pPos = nodesWithPos[c.parentId];
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', pPos.x); line.setAttribute('y1', pPos.y);
+            line.setAttribute('x2', pos.x); line.setAttribute('y2', pos.y);
+            line.setAttribute('stroke', '#adb5bd'); line.setAttribute('stroke-width', '2');
+            svg.appendChild(line);
+        }
+        
+        // Render Node Box
+        const box = buildContainerBox(c, activeTasks, true);
+        box.classList.add('mindmap-node');
+        box.style.position = 'absolute';
+        box.style.left = (pos.x - 125) + 'px'; // width 250 -> offset 125
+        box.style.top = (pos.y - 40) + 'px';
+        box.style.width = '250px';
+        box.style.zIndex = '10';
+        
+        canvas.appendChild(box);
+    });
+    
+    wrapper.appendChild(canvas);
+    board.appendChild(wrapper);
+    
+    // Add floating Add Root Button
+    const btn = document.createElement('button');
+    btn.innerText = "+ Root"; btn.className = "btn-primary"; btn.style.cssText = "position:absolute; bottom:15px; right:15px; z-index:20; box-shadow: 0 4px 6px rgba(0,0,0,0.1);";
+    btn.onclick = () => createNewContainer(0, null);
+    wrapper.appendChild(btn);
+    
+    setTimeout(() => { wrapper.scrollTo(1500 - wrapper.clientWidth/2, 1500 - wrapper.clientHeight/2); }, 10);
+}
+
+function calculateMindMap(cx, cy) {
+    const roots = containers.filter(c => !c.parentId);
+    if(roots.length === 1) {
+        nodesWithPos[roots[0].id] = {x: cx, y: cy};
+        layoutChildrenNodes(roots[0].id, cx, cy, 350, 0, 360);
+    } else if (roots.length > 1) {
+        let angleStep = 360 / roots.length;
+        roots.forEach((r, i) => {
+            let angle = i * angleStep;
+            let rad = angle * Math.PI / 180;
+            let rx = cx + 200 * Math.cos(rad);
+            let ry = cy + 200 * Math.sin(rad);
+            nodesWithPos[r.id] = {x: rx, y: ry};
+            layoutChildrenNodes(r.id, cx, cy, 550, angle - angleStep/1.5, angle + angleStep/1.5);
+        });
+    }
+}
+function layoutChildrenNodes(parentId, cx, cy, radius, startA, endA) {
+    let children = containers.filter(c => c.parentId === parentId);
+    if(!children.length) return;
+    let step = (endA - startA) / children.length;
+    children.forEach((c, i) => {
+        let angle = startA + (i + 0.5) * step;
+        let rad = angle * Math.PI / 180;
+        let nx = cx + radius * Math.cos(rad);
+        let ny = cy + radius * Math.sin(rad);
+        nodesWithPos[c.id] = {x: nx, y: ny};
+        layoutChildrenNodes(c.id, cx, cy, radius + 350, angle - step/1.2, angle + step/1.2);
+    });
+}
+
+/* --- Container Generic Builder --- */
+function buildContainerBox(cont, activeTasks, isMindMap = false) {
+    const box = document.createElement('div');
+    box.className = 'container-box';
+    
+    let parentBadgeHTML = "";
+    if (cont.parentId) {
+        const pCont = containers.find(c => c.id === cont.parentId);
+        if(pCont && currentTaskView === 'kanban') parentBadgeHTML = `<span class="hierarchy-badge">↳ ${pCont.title}</span>`;
+    }
+
+    const header = document.createElement('div');
+    header.className = 'container-header';
+    header.style.backgroundColor = cont.color || '#e7f5ff';
+    header.innerHTML = `
+        <input type="color" class="container-color-picker" title="Color" value="${cont.color}" onchange="updateContainerColor(${cont.id}, this.value)">
+        <div style="flex:1; min-width:0;">
+            ${parentBadgeHTML}
+            <div class="container-title" contenteditable="true" onblur="renameContainer(${cont.id}, this.innerText)">${cont.title}</div>
+        </div>
+        <div class="container-actions">
+            <button onclick="createNewContainer(${cont.columnIndex + 1}, ${cont.id})" title="Add Sub-branch">↳+</button>
+            <button class="del-btn" onclick="deleteContainer(${cont.id})" title="Delete Container">✕</button>
+        </div>
+    `;
+
+    const dropzone = document.createElement('div');
+    dropzone.className = 'task-dropzone';
+    dropzone.dataset.containerId = cont.id;
+    if(isMindMap) dropzone.style.maxHeight = "200px";
+    if(isMindMap) dropzone.style.overflowY = "auto";
+    setupDropzoneEvents(dropzone);
+
+    const contTasks = activeTasks.filter(t => t.containerId === cont.id).sort((a,b) => a.order - b.order);
+    contTasks.forEach(t => dropzone.appendChild(createTaskCard(t)));
+
+    box.appendChild(header);
+    box.appendChild(dropzone);
+    return box;
+}
+
+
 // Container CRUD
-function createNewContainer(colIdx) {
-    const title = prompt("Container Title:", "New Group");
+function createNewContainer(colIdx, parentId = null) {
+    const title = prompt("Container Title:", "New Topic");
     if (!title) return;
     const colContainers = containers.filter(c => c.columnIndex === colIdx);
     const order = colContainers.length > 0 ? Math.max(...colContainers.map(c => c.orderInColumn)) + 1 : 0;
     
-    containers.push({ id: Date.now(), title, color: "#f8f9fa", columnIndex: colIdx, orderInColumn: order });
+    containers.push({ id: Date.now(), title, color: "#f8f9fa", columnIndex: colIdx, parentId: parentId, orderInColumn: order });
     saveContainers(); renderTasksPage();
 }
 function updateContainerColor(id, color) {
@@ -906,8 +1153,9 @@ function renameContainer(id, newTitle) {
     const c = containers.find(x => x.id === id); if(c) { c.title = newTitle; saveContainers(); }
 }
 function deleteContainer(id) {
-    if(!confirm("Delete this container? Tasks will be moved to Unassigned.")) return;
+    if(!confirm("Delete this container? Tasks and Sub-containers will be orphaned to Root/Inbox.")) return;
     containers = containers.filter(c => c.id !== id);
+    containers.forEach(c => { if(c.parentId === id) c.parentId = null; });
     tasks.forEach(t => { if(t.containerId === id) t.containerId = null; });
     saveContainers(); saveTasks(); renderTasksPage();
 }
@@ -919,7 +1167,6 @@ function createTaskCard(tObj) {
     card.draggable = true;
     card.dataset.id = tObj.id;
 
-    // Drag Listeners
     card.addEventListener('dragstart', function(e) {
         draggedTaskElement = this;
         e.dataTransfer.effectAllowed = 'move';
@@ -949,8 +1196,8 @@ function createTaskCard(tObj) {
 
     const taskBadges = (tObj.labels||[]).map(l=>`<span class="label-chip-sm">${l}</span>`).join('');
     info.innerHTML = `
-        <div class="task-title-text">${tObj.title} ${taskBadges}</div>
-        ${dateText ? `<div class="task-meta-text">${dateText}</div>` : ''}
+        <div class="task-title-text">${tObj.title}</div>
+        ${dateText ? `<div class="task-meta-text">${dateText} ${taskBadges}</div>` : (taskBadges ? `<div class="task-meta-text">${taskBadges}</div>` : '')}
     `;
 
     card.appendChild(cb); card.appendChild(info);
@@ -993,7 +1240,6 @@ function persistBoardState() {
         });
     });
     saveTasks();
-    renderTasksPage(); // Re-render ensures UI states refresh smoothly
 }
 
 
@@ -1382,7 +1628,7 @@ function addSegmentRow(s=null, e=null){
     const i1 = document.createElement('input'), i2 = document.createElement('input'), b = document.createElement('button');
     i1.type='datetime-local'; i1.className='seg-start'; if(s) i1.value = new Date(s - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
     i2.type='datetime-local'; i2.className='seg-end'; if(e) i2.value = new Date(e - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
-    b.innerText='X'; b.className='btn-danger btn-sm'; b.onclick=()=>div.remove();
+    b.innerText='✕'; b.className='btn-danger btn-sm'; b.onclick=()=>div.remove();
     div.append(i1,i2,b); document.getElementById('segmentsContainer').appendChild(div);
 }
 function saveEdit(){
@@ -1405,6 +1651,14 @@ function showPage(id){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.getElementById('page-'+id).classList.add('active'); const idx = ['timer','tasks','records','calendar','stats','settings'].indexOf(id);
     if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
+    
+    // Auto sync view toggle active state to match cache
+    if(id === 'tasks') {
+        document.querySelectorAll('#taskViewToggles button').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`#taskViewToggles button[onclick="setTaskView('${currentTaskView}')"]`);
+        if(activeBtn) activeBtn.classList.add('active');
+    }
+
     if(id==='calendar') renderCalendar(); if(id==='records') renderRecordsPage(); if(id==='settings') hydrateSettingsUI(); if(id==='stats') renderStatsPage(); if(id==='tasks') renderTasksPage();
 }
 function exportData(){
